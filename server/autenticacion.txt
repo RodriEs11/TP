@@ -1,0 +1,3 @@
+rodrigo|rodrigo123|admin|false
+ema|ema123|admin|true
+luna|luna123|admin|false

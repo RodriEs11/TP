@@ -1,0 +1,55 @@
+# Visual Studio Code
+.vscode/
+.vscode/*
+
+# Compiled object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Binary files
+*.bin
+*.elf
+*.lss
+*.lst
+*.map
+*.hex
+*.srec
+*.symbols
+*.pyc
+*.pyo
+*.pyd
