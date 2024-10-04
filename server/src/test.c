@@ -3,6 +3,7 @@
 
 #include "../include/Usuario.h"
 #include "../include/ArchivosHandler.h"
+#include "../include/util.h"
 
 
 
@@ -15,20 +16,15 @@ int main(int argc, char *argv[])
         printf("Linea %d: %s\n", i, lineas[i]);
     }   
 
-    escribirArchivo("prueba.log", "Hola mundo");
-    escribirArchivo("prueba.log", "Hola mundo222");
-    escribirArchivo("prueba.log", "Hola mundo253252352");
-    escribirArchivo("prueba.log", "Hola mundo343434");
+   int usuarioValidado = validarUsuario("rodrigo", "rodrigo123");
 
-    //Usuario usuario = parsearUsuario(texto);
+   printf("Usuario validado: %d\n", usuarioValidado);
 
-   // printf("Nombre: %s\n", usuario.nombre);
-   // printf("Contrasena: %s\n", usuario.password);
-   // printf("Rol: %s\n", usuario.rol);
-   // printf("Activo: %d\n", usuario.activo);
+   printf("fecha y hora: %s\n", obtenerFechaHoraActual());
+ 
 
     return 0;
-
+ 
 };
 
 

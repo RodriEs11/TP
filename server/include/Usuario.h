@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include "../include/ArchivosHandler.h"
+
 
 typedef struct {
     char nombre[50];
@@ -47,6 +49,22 @@ Usuario parsearUsuario(const char *texto)
     }
 
     return usuario;
+}
+
+
+// Valida si un usuario existe en el archivo de autenticacion
+// Retorna 1 si el usuario existe, 0 si no existe
+int validarUsuario(char* nombre, char* password){
+    char** lineas = separarLineas("../autenticacion.txt");
+    Usuario* usuarios = malloc(sizeof(Usuario) * 100);
+    for (int i = 0; lineas[i] != NULL; i++)
+    {
+        usuarios[i] = parsearUsuario(lineas[i]);
+        if(strcmp(usuarios[i].nombre, nombre) == 0 && strcmp(usuarios[i].password, password) == 0){
+            return 1;
+        }
+    }
+    return 0;   
 }
 
 #endif // USUARIO_H

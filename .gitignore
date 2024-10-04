@@ -54,3 +54,4 @@
 *.pyc
 *.pyo
 *.pyd
+server/src/test.c
