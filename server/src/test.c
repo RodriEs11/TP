@@ -4,24 +4,22 @@
 #include "../include/Usuario.h"
 #include "../include/ArchivosHandler.h"
 #include "../include/util.h"
+#include "../include/Figurita.h"
 
 
 
 int main(int argc, char *argv[])
 {
 
-    char** lineas = separarLineas("../autenticacion.txt");
+    char** lineas = separarLineas("../figuritas.txt");
 
-    for (int i = 0; lineas[i] != NULL; i++) {
-        printf("Linea %d: %s\n", i, lineas[i]);
-    }   
+    Figurita* figuritas = malloc(sizeof(Figurita) * 100);
+    for (int i = 0; lineas[i] != NULL; i++)
+    {
+        figuritas[i] = parsearFigurita(lineas[i]);
+        printf("Figurita %d: %d %s %s %s %d\n", i, figuritas[i].id, figuritas[i].usuario, figuritas[i].pais, figuritas[i].jugador, figuritas[i].disponible);
+    }
 
-   int usuarioValidado = validarUsuario("rodrigo", "rodrigo123");
-
-   printf("Usuario validado: %d\n", usuarioValidado);
-
-   printf("fecha y hora: %s\n", obtenerFechaHoraActual());
- 
 
     return 0;
  

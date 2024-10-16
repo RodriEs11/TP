@@ -1,0 +1,6 @@
+1;midudev;brasil;neymar;1
+2;midudev;argentina;messi;1
+3;victorRobles;uruguay;francescoli;0
+4;hdleon;argentina;messi;1
+5;hdleon;argentina;messi;1
+6;faztCode;uruguay;francescoli;1
