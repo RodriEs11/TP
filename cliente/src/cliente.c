@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <WinSock2.h>
 #include <stdbool.h>
+#include <windows.h>
+
+#include "../include/PrintColor.h"
 
 char sendBuff[512], recvBuff[512];
 
@@ -10,6 +13,12 @@ WSADATA wsaData;
 SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
+
+void setColor(int textColor)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, textColor);
+}
 
 int configurarSocket(char *direccion, int puerto)
 {
@@ -27,8 +36,8 @@ int configurarSocket(char *direccion, int puerto)
     host = (struct hostent *)gethostbyname(direccion);
     if (host == NULL)
     {
-        printf("No se pudo resolver host\n");
-        getchar();
+        printColoredText(RED,"No se pudo resolver el host\n");
+        system("pause");
         WSACleanup();
         return WSAGetLastError();
     }
@@ -37,8 +46,8 @@ int configurarSocket(char *direccion, int puerto)
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_socket == INVALID_SOCKET)
     {
-        printf("No se pudo crear socket\n");
-        getchar();
+        printColoredText(RED, "No se pudo crear el socket\n");
+         system("pause");
         WSACleanup();
         return WSAGetLastError();
     }
@@ -50,15 +59,28 @@ int configurarSocket(char *direccion, int puerto)
     server.sin_family = AF_INET;
     server.sin_port = htons(puerto);
 
-    printf("Socket configurado en %s:%d\n", inet_ntoa(server.sin_addr), puerto);
 }
 
 void mostrarMenu()
 {
-    printf("\n\n----- Menú Principal -----\n");
-    printf("1. Configurar socket\n");
+
+    printf("\n\n----- Menu Principal -----\n");
+    printf("1. Configurar host\n");
     printf("2. Conectarse\n");
-    printf("3. Opción 3\n");
+    printf("3. Opcion 3\n");
+
+    // mostrar numero de host y puerto como referencia, si es nulo mostrar mensaje
+    if (host != NULL)
+    {
+
+        printColoredText(GREEN, "\nHost: %s", inet_ntoa(server.sin_addr));
+        printColoredText(GREEN, "Puerto: %d\n", ntohs(server.sin_port));
+    }
+    else
+    {
+        printColoredText(RED, "\nHost no configurado\n");
+    }
+
     printf("0. Salir\n");
     printf("--------------------------\n");
 }
@@ -121,41 +143,39 @@ int main(int argc, char *argv[])
 
     bool usuarioValidado = false;
 
-    while (1)
+    int opcion;
+
+    do
     {
 
-        int opcion;
+        system("cls");
+        mostrarMenu();
+        printf("Selecciona una opcion: ");
+        scanf("%d", &opcion);
 
-        do
+        switch (opcion)
         {
-            mostrarMenu();
-            printf("Selecciona una opción: ");
-            scanf("%d", &opcion);
+        case 1:
+            char direccion[50];
+            int puerto;
+            printf("\nIntroduce la direccion del servidor: ");
+            scanf("%s", &direccion);
+            printf("Introduce el puerto: ");
+            scanf("%d", &puerto);
 
-            switch (opcion)
-            {
-            case 1:
-                char direccion[50];
-                int puerto;
-                printf("Introduce la dirección del servidor: ");
-                scanf("%s", &direccion);
-                printf("Introduce el puerto: ");
-                scanf("%d", &puerto);
+            configurarSocket(direccion, puerto);
+            break;
+        case 2:
+            conexionAlSocket();
+            break;
+        case 0:
+            printf("Saliendo del programa.\n");
+            break;
+        default:
+            printf("Opcion no valida. Intenta de nuevo.\n");
+        }
 
-                configurarSocket(direccion, puerto);
-                break;
-            case 2:
-                conexionAlSocket();
-                break;
-            case 0:
-                printf("Saliendo del programa.\n");
-                break;
-            default:
-                printf("Opción no válida. Intenta de nuevo.\n");
-            }
-
-        } while (opcion != 0);
-    }
+    } while (opcion != 0);
 
     return 0;
 }
