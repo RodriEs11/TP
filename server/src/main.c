@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <WinSock2.h>
 
+#include "../include/Rutas.h"
 #include "../include/ArchivosHandler.h"
 #include "../include/Usuario.h"
+
 
 char sendBuff[512], recvBuff[512];
 
@@ -18,7 +20,7 @@ struct hostent *host;
 int respuesta, stsize;
 
 #define PORT 6000
-#define LOG_FILE "../log/server.log"
+
 
 void enviarMensajeACliente(SOCKET conn_socket, const char *mensaje)
 {

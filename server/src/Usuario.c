@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include "../include/ArchivosHandler.h"
 
-#define AUTENTICACION_FILE "../autenticacion.txt"
+#include "../include/ArchivosHandler.h"
+#include "../include/Rutas.h"
 
 typedef struct {
     char nombre[50];

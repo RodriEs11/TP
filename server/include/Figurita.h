@@ -14,5 +14,15 @@ typedef struct
 // Parsea un string con el formato "id;usuario;pais;jugador;disponible" y lo convierte en una Figurita
 Figurita parsearFigurita(const char *texto);
 
+int obtenerUltimaFiguritaId();
+void agregarFigurita(Figurita figurita);
+void actualizarFigurita(Figurita figurita);
+void eliminarFigurita(int id);
+Figurita* obtenerFiguritas();
+int obtenerFiguritasCount();
+Figurita obtenerFiguritaPorId(int id);
+Figurita* obtenerFiguritasPorUsuario(char* usuario);
+
+
 
 #endif // FIGURITA_H
