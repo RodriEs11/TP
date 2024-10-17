@@ -4,6 +4,7 @@
 #include <WinSock2.h>
 #include <stdbool.h>
 
+#include "../include/Menu.h"
 
 #include "../../common/include/CmdStyle.h"
 #include "../../common/include/Util.h"
@@ -14,7 +15,6 @@ WSADATA wsaData;
 SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
-
 
 int configurarSocket(char *direccion, int puerto)
 {
@@ -56,40 +56,133 @@ int configurarSocket(char *direccion, int puerto)
     server.sin_port = htons(puerto);
 }
 
-void mostrarMenu()
+void insertarFigurita(SOCKET conn_socket, char *nombre, char *pais, int disponible)
 {
+    strcpy(sendBuff, nombre);
+    send(conn_socket, sendBuff, sizeof(nombre), 0);
 
-    printf("\n\n----- Menu Principal -----\n");
-    printf("1. Configurar host\n");
-    printf("2. Conectarse\n");
-    printf("3. Opcion 3\n");
+    strcpy(sendBuff, pais);
+    send(conn_socket, pais, sizeof(pais), 0);
 
-    // mostrar numero de host y puerto como referencia, si es nulo mostrar mensaje de error
-    if (host != NULL)
+    sprintf(sendBuff, "%d", disponible);
+    send(conn_socket, sendBuff, sizeof(disponible), 0);
+
+
+    recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
+    printColoredText(BLUE, "\nRespuesta del servidor: ");
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+    system("pause");
+}
+
+void opcionInsertarFigurita()
+{
+    int opcion;
+
+    char nombre[50] = "";
+    char pais[50] = "";
+    int disponible = -1;
+
+    do
     {
+        // Menu de insertar figurita
+        // 1. Nombre
+        // 2. Pais
+        // 3. Disponible
+        // 9. Insertar
+        // 0. Volver
 
-        printColoredText(GREEN, "\nHost: %s", inet_ntoa(server.sin_addr));
-        printColoredText(GREEN, "\nPuerto: %d\n\n", ntohs(server.sin_port));
-    }
-    else
+        mostrarMenuInsertarFigurita(server, nombre, pais, disponible);
+
+        printf("Selecciona una opcion: ");
+        scanf("%d", &opcion);
+
+        switch (opcion)
+        {
+        case 1:
+
+            printf("Introduce el nombre de la figurita: ");
+            scanf("%s", nombre);
+
+            break;
+
+        case 2:
+            printf("Introduce el pais de la figurita: ");
+            scanf("%s", pais);
+            break;
+
+        case 3:
+            printf("Introduce si la figurita esta disponible 1 (si) / 0 (no): ");
+            scanf("%d", &disponible);
+
+            break;
+
+        case 9:
+            insertarFigurita(conn_socket, nombre, pais, disponible);
+            break;
+
+        case 0:
+            // Volver
+            break;
+
+        default:
+            printf("Opcion no valida. Intenta de nuevo.\n");
+        }
+
+    } while (opcion != 0);
+}
+
+void opcionFiguritas()
+{
+    int opcion;
+    do
     {
-        printColoredText(RED, "\nHost no configurado\n\n");
-    }
+        // Menu de figuritas
+        // 1. Insertar figurita
+        // 2. Ver figuritas
+        // 3. Buscar figurita
+        // 4. Eliminar figurita
+        // 0. Volver
 
-    printf("0. Salir\n");
-    printf("--------------------------\n");
+        mostrarMenuFiguritas(server);
+
+        printf("Selecciona una opcion: ");
+        scanf("%d", &opcion);
+
+        switch (opcion)
+        {
+        case 1:
+            opcionInsertarFigurita();
+            break;
+
+        case 2:
+            break;
+
+        case 3:
+            break;
+
+        case 4:
+            break;
+
+        case 0:
+            // Volver
+            break;
+
+        default:
+            printf("Opcion no valida. Intenta de nuevo.\n");
+        }
+
+    } while (opcion != 0);
 }
 
 int opcionConexionAlSocket()
 {
-    
-    
-    if (host == NULL) {
+
+    if (host == NULL)
+    {
         printColoredText(RED, "Host no configurado. Por favor, configure el host primero.");
         system("pause");
         return -1;
     }
-    
 
     WSAStartup(MAKEWORD(2, 2), &wsaData);
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -105,7 +198,6 @@ int opcionConexionAlSocket()
         return -1;
     }
 
-    loadingAnimation(10);
     printColoredText(GREEN, "Conexion establecida con %s\n", inet_ntoa(server.sin_addr));
 
     // Enviar mensaje
@@ -117,31 +209,55 @@ int opcionConexionAlSocket()
     ocultarInput(sendBuff);
     send(conn_socket, sendBuff, sizeof(sendBuff), 0);
 
-
     recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
-    printColoredText(BLUE, "\nRespuesta del servidor: ");
-    printf("%s\n", recvBuff);
 
     if (strstr(recvBuff, "Usuario validado") != NULL)
     {
         usuarioValidado = true;
     }
-
-    while (usuarioValidado)
+    else
     {
-        printf("\nIntroduce un mensaje: ");
-        scanf("%s", sendBuff);
-        send(conn_socket, sendBuff, sizeof(sendBuff), 0);
-
-        recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
-        printColoredText( BLUE,"Respuesta del servidor: ");
-        printf("%s", recvBuff);
-
-        if (strstr(recvBuff, "Cliente desconectado") != NULL)
-        {
-            break;
-        }
+        printColoredText(RED, "\nUsuario o password invalido\n");
+        system("pause");
+        return -1;
     }
+
+    int opcion;
+    do
+    {
+        // Menu de conexion
+        // Opciones de conexion
+        // 1. Figuritas
+        // 2. Insertar usuario
+        // 3. Baja de usuario
+        // 4. Ver registro de actividades
+        // 0. Cerrar sesion
+        mostrarMenuConexion(server);
+
+        printf("Selecciona una opcion: ");
+        scanf("%d", &opcion);
+
+        switch (opcion)
+        {
+        case 1:
+            opcionFiguritas();
+            break;
+        case 2:
+
+            break;
+        case 3:
+
+            break;
+        case 4:
+
+            break;
+        case 0:
+            break;
+        default:
+            printf("Opcion no valida. Intenta de nuevo.\n");
+        }
+
+    } while (opcion != 0);
 
     closesocket(conn_socket);
 }
@@ -169,24 +285,32 @@ int main(int argc, char *argv[])
 
     do
     {
+        // Menu principal
+        // 1. Configurar host
+        // 2. Conectarse
+        // 0. Salir
+        // Si no se ha configurado el host, mostrar mensaje de error
+        // Mostrar host y puerto como referencia
+        // Si se ha configurado el host, mostrar mensaje de exito
 
-        system("cls");
-        mostrarMenu();
+        mostrarMenuPrincipal(server, host);
         printf("Selecciona una opcion: ");
         scanf("%d", &opcion);
 
         switch (opcion)
         {
+            // Configurar host
         case 1:
-
             opcionConfigurarSocket();
             break;
+            // Conectarse
         case 2:
             configurarSocket("localhost", 6000);
             opcionConexionAlSocket();
             break;
+
         case 0:
-            printf("Saliendo del programa.\n");
+            // Salir
             break;
         default:
             printf("Opcion no valida. Intenta de nuevo.\n");

@@ -2,11 +2,13 @@
 
 
 #include "../include/Usuario.h"
-#include "../include/ArchivosHandler.h"
-#include "../include/util.h"
 #include "../include/Figurita.h"
-
 #include "../include/Rutas.h"
+
+#include "../../common/include/ArchivosHandler.h"
+#include "../../common/include/util.h"
+
+
 
 
 int main(int argc, char *argv[])
@@ -23,6 +25,8 @@ int main(int argc, char *argv[])
     printf("Figurita  %s\n", figuritas[1].jugador);
     printf("Figurita  %d", obtenerFiguritasCount());
 
+    system("pause");
+    
     return 0;
  
 };

@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        escribirLog(LOG_FILE, "Esperando conexiones en el puerto %d", PORT);
+        escribirLog(LOG_FILE, "Esperando conexiones en el puerto %d...", PORT);
         stsize = sizeof(struct sockaddr);
         comm_socket = accept(conn_socket, (struct sockaddr *)&client, &stsize);
 
