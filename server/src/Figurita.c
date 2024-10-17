@@ -4,7 +4,8 @@
 #include <string.h>
 
 #include "../include/Rutas.h"
-#include "../include/ArchivosHandler.h"
+
+#include "../../common/include/ArchivosHandler.h"
 
 // Parsea un string con el formato "id;usuario;pais;jugador;disponible" y lo convierte en una Figurita
 Figurita parsearFigurita(const char *texto)

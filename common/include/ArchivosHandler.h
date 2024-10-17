@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/ArchivosHandler.h"
-#include "../include/util.h"
+#include "util.h"
 
 // Retorna el contenido de un archivo como un string
 // Devuelve NULL si hay un error

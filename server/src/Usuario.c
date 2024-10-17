@@ -4,8 +4,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "../include/ArchivosHandler.h"
 #include "../include/Rutas.h"
+
+#include "../../common/include/ArchivosHandler.h"
 
 typedef struct {
     char nombre[50];

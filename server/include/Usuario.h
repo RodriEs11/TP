@@ -3,7 +3,8 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include "../include/ArchivosHandler.h"
+
+#include "../../common/include/ArchivosHandler.h"
 
 
 typedef struct {

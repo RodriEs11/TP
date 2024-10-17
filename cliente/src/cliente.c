@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <WinSock2.h>
 #include <stdbool.h>
-#include <windows.h>
 
-#include "../include/PrintColor.h"
+
+#include "../../common/include/CmdStyle.h"
+#include "../../common/include/Util.h"
 
 char sendBuff[512], recvBuff[512];
 
@@ -14,11 +15,6 @@ SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
 
-void setColor(int textColor)
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, textColor);
-}
 
 int configurarSocket(char *direccion, int puerto)
 {
@@ -36,7 +32,7 @@ int configurarSocket(char *direccion, int puerto)
     host = (struct hostent *)gethostbyname(direccion);
     if (host == NULL)
     {
-        printColoredText(RED,"No se pudo resolver el host\n");
+        printColoredText(RED, "No se pudo resolver el host\n");
         system("pause");
         WSACleanup();
         return WSAGetLastError();
@@ -47,7 +43,7 @@ int configurarSocket(char *direccion, int puerto)
     if (conn_socket == INVALID_SOCKET)
     {
         printColoredText(RED, "No se pudo crear el socket\n");
-         system("pause");
+        system("pause");
         WSACleanup();
         return WSAGetLastError();
     }
@@ -58,7 +54,6 @@ int configurarSocket(char *direccion, int puerto)
 
     server.sin_family = AF_INET;
     server.sin_port = htons(puerto);
-
 }
 
 void mostrarMenu()
@@ -69,24 +64,33 @@ void mostrarMenu()
     printf("2. Conectarse\n");
     printf("3. Opcion 3\n");
 
-    // mostrar numero de host y puerto como referencia, si es nulo mostrar mensaje
+    // mostrar numero de host y puerto como referencia, si es nulo mostrar mensaje de error
     if (host != NULL)
     {
 
         printColoredText(GREEN, "\nHost: %s", inet_ntoa(server.sin_addr));
-        printColoredText(GREEN, "Puerto: %d\n", ntohs(server.sin_port));
+        printColoredText(GREEN, "\nPuerto: %d\n\n", ntohs(server.sin_port));
     }
     else
     {
-        printColoredText(RED, "\nHost no configurado\n");
+        printColoredText(RED, "\nHost no configurado\n\n");
     }
 
     printf("0. Salir\n");
     printf("--------------------------\n");
 }
 
-int conexionAlSocket()
+int opcionConexionAlSocket()
 {
+    
+    
+    if (host == NULL) {
+        printColoredText(RED, "Host no configurado. Por favor, configure el host primero.");
+        system("pause");
+        return -1;
+    }
+    
+
     WSAStartup(MAKEWORD(2, 2), &wsaData);
     conn_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -95,12 +99,14 @@ int conexionAlSocket()
     // Conexion al servidor
     if (connect(conn_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
     {
-        printf("Error al conectar al servidor\n");
+        printColoredText(RED, "Error al conectar al servidor\n");
+        system("pause");
         closesocket(conn_socket);
         return -1;
     }
 
-    printf("Conexion establecida con %s\n", inet_ntoa(server.sin_addr));
+    loadingAnimation(10);
+    printColoredText(GREEN, "Conexion establecida con %s\n", inet_ntoa(server.sin_addr));
 
     // Enviar mensaje
     printf("Introduce tu nombre de usuario: ");
@@ -108,11 +114,13 @@ int conexionAlSocket()
     send(conn_socket, sendBuff, sizeof(sendBuff), 0);
 
     printf("Introduce tu password: ");
-    scanf("%s", sendBuff);
+    ocultarInput(sendBuff);
     send(conn_socket, sendBuff, sizeof(sendBuff), 0);
 
+
     recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
-    printf("Respuesta del servidor: %s\n", recvBuff);
+    printColoredText(BLUE, "\nRespuesta del servidor: ");
+    printf("%s\n", recvBuff);
 
     if (strstr(recvBuff, "Usuario validado") != NULL)
     {
@@ -121,12 +129,13 @@ int conexionAlSocket()
 
     while (usuarioValidado)
     {
-        printf("Introduce un mensaje: ");
+        printf("\nIntroduce un mensaje: ");
         scanf("%s", sendBuff);
         send(conn_socket, sendBuff, sizeof(sendBuff), 0);
 
         recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
-        printf("Respuesta del servidor: %s\n", recvBuff);
+        printColoredText( BLUE,"Respuesta del servidor: ");
+        printf("%s", recvBuff);
 
         if (strstr(recvBuff, "Cliente desconectado") != NULL)
         {
@@ -135,6 +144,19 @@ int conexionAlSocket()
     }
 
     closesocket(conn_socket);
+}
+
+void opcionConfigurarSocket()
+{
+    char direccion[100];
+    int puerto;
+
+    printf("Introduce la direccion del servidor: ");
+    scanf("%s", direccion);
+    printf("Introduce el puerto: ");
+    scanf("%d", &puerto);
+
+    configurarSocket(direccion, puerto);
 }
 
 int main(int argc, char *argv[])
@@ -156,17 +178,12 @@ int main(int argc, char *argv[])
         switch (opcion)
         {
         case 1:
-            char direccion[50];
-            int puerto;
-            printf("\nIntroduce la direccion del servidor: ");
-            scanf("%s", &direccion);
-            printf("Introduce el puerto: ");
-            scanf("%d", &puerto);
 
-            configurarSocket(direccion, puerto);
+            opcionConfigurarSocket();
             break;
         case 2:
-            conexionAlSocket();
+            configurarSocket("localhost", 6000);
+            opcionConexionAlSocket();
             break;
         case 0:
             printf("Saliendo del programa.\n");

@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <conio.h>
 
 char *obtenerFechaHoraActual()
 {
@@ -63,6 +64,40 @@ char *mayusculas(const char *texto)
 
     // Imprimir el texto en mayúsculas
     return mayusculas;
+}
+
+void ocultarInput(char* password)
+{
+    char ch;
+    int index = 0;
+
+    while (1)
+    {
+        ch = _getch(); // Leer un carácter sin mostrarlo
+
+        if (ch == '\r')
+        {                           // Si presiona Enter
+            password[index] = '\0'; // Terminar la cadena
+            break;
+        }
+        else if (ch == '\b')
+        { // Si presiona Backspace
+            if (index > 0)
+            {
+                index--;         // Mover el índice hacia atrás
+                printf("\b \b"); // Eliminar el asterisco
+            }
+        }
+        else
+        {
+            if (index < 100 - 1)
+            {                         // Verificar que no exceda el límite (100)
+                password[index] = ch; // Guardar el carácter
+                index++;
+                printf("*"); // Mostrar asterisco
+            }
+        }
+    }
 }
 
 #endif // UTIL_H

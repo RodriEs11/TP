@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "../include/ArchivosHandler.h"
-#include "../include/util.h"
+#include "include/ArchivosHandler.h"
+#include "include/util.h"
 
 // Retorna el contenido de un archivo como un string
 // Devuelve NULL si hay un error
@@ -109,12 +109,12 @@ int escribirArchivo(const char *nombreArchivo, const char *linea)
     FILE *archivo = fopen(nombreArchivo, "a");
     if (archivo == NULL)
     {
-        perror("Error al abrir el archivo");
+        printf("Error al abrir el archivo %s", nombreArchivo);
         return -1;
     }
     if (fprintf(archivo, "[%s] %s\n", obtenerFechaHoraActual(), linea) < 0)
     {
-        perror("Error al escribir en el archivo");
+        printf("Error al escribir en el archivo %s", nombreArchivo);
         fclose(archivo);
         return -1;
     }
