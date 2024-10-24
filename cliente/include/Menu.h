@@ -11,4 +11,5 @@ void mostrarMenuFiguritas(struct sockaddr_in server);
 
 void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *pais, int disponible);
 
+void mostrarMenuBajaUsuario(struct sockaddr_in server);
 #endif // MENU_H

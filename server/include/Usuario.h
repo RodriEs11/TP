@@ -25,4 +25,19 @@ int validarUsuario(char* nombre, char* password);
 // obtener el rol del usuario
 char* obtenerRol(char* nombre);
 
+// obtener usuarios activos
+Usuario* obtenerUsuariosActivos();
+
+// obtener cantidad de usuarios activos
+int obtenerUsuariosActivosCount();
+
+// agregar un usuario
+int agregarUsuario(Usuario usuario);
+
+
+// Valida si un usuario existe en el archivo de autenticacion
+// Retorna 1 si el usuario existe, 0 si no existe
+int existeUsuario(char* nombre);
+
+
 #endif // USUARIO_H

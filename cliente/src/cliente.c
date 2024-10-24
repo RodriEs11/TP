@@ -17,7 +17,6 @@ SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
 
-
 void enviarMensajeAServidor(SOCKET conn_socket, const char *mensaje)
 {
     send(conn_socket, mensaje, strlen(mensaje), 0);
@@ -77,11 +76,10 @@ int insertarFigurita(SOCKET conn_socket)
 
     mostrarMenuInsertarFigurita(server, "", "", -1);
 
-
     // Enviar solicitud de inserción de figurita
     enviarMensajeAServidor(conn_socket, INSERTAR_FIGURITA);
 
-     // Introduce el nombre de la figurita
+    // Introduce el nombre de la figurita
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
@@ -118,15 +116,12 @@ int insertarFigurita(SOCKET conn_socket)
 int verFiguritas(SOCKET conn_socket)
 {
 
-
     enviarMensajeAServidor(conn_socket, VER_FIGURITAS);
 
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n", recvBuff);
     system("pause");
-
-
 }
 
 void opcionFiguritas()
@@ -171,6 +166,33 @@ void opcionFiguritas()
         }
 
     } while (opcion != 0);
+}
+
+void opcionInsertarUsuario()
+{
+
+    enviarMensajeAServidor(conn_socket, INSERTAR_USUARIO);
+    recibirMensaje(conn_socket); // Recibir mensaje de solicitud de nombre de usuario
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+
+
+    recibirMensaje(conn_socket); // Recibir mensaje de solicitud de password
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    ocultarInput(sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "\n[Server] ");
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+
+    system("pause");
+}
+void opcionBajaUsuario()
+{
 }
 
 int opcionConexionAlSocket()
@@ -242,10 +264,10 @@ int opcionConexionAlSocket()
             opcionFiguritas();
             break;
         case 2:
-
+            opcionInsertarUsuario();
             break;
         case 3:
-
+            opcionBajaUsuario();
             break;
         case 4:
 

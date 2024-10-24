@@ -20,6 +20,7 @@ char **separarLineas(const char *nombreArchivo);
 // Escribe una línea al final de un archivo de texto
 //// Devuelve 0 si tiene éxito, -1 si hay un error
 int escribirArchivo(const char *nombreArchivo, const char *linea);
+int escribirArchivoSinFecha(const char *nombreArchivo, const char *linea);
 
 // Escribe un mensaje en el archivo de log especificado en LOG_FILE
 void escribirLog(char *logFile, const char *formato, ...);

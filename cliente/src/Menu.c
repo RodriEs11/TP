@@ -105,4 +105,16 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
     printf("\n--------------------------\n");
 }
 
+void mostrarMenuBajaUsuario(struct sockaddr_in server )
+{
+    system("cls");
+    printColoredText(GREEN, "Conectado a %s\n", inet_ntoa(server.sin_addr));
+
+    printColoredText(DEFAULT, "\n\nMenu Principal \\ Baja de Usuario\n");
+    printf("\n\n\n----- Baja de Usuario -----\n\n");
+
+
+}
+
+
 #endif // MENU_H

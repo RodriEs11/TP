@@ -156,6 +156,60 @@ void verFiguritas(SOCKET comm_socket, char *usuario)
     }
 }
 
+int insertarUsuario(SOCKET comm_socket)
+{
+
+    Usuario usuario;
+    char rol[40] = "coleccionista";
+
+    // Obtener credenciales de usuario
+    enviarMensajeACliente(comm_socket, "Introduce el nombre de usuario: ");
+    recibirMensaje(comm_socket);
+    char nombre[40];
+    strncpy(nombre, recvBuff, sizeof(nombre) - 1);
+    nombre[sizeof(nombre) - 1] = '\0'; // Agrega un caracter no nulo al final del buffer
+    escribirLog(LOG_FILE, "Nombre de usuario recibido: %s", recvBuff);
+
+    enviarMensajeACliente(comm_socket, "Introduce la password: ");
+    recibirMensaje(comm_socket);
+    char password[40];
+    strncpy(password, recvBuff, sizeof(password) - 1);
+    password[sizeof(password) - 1] = '\0';
+
+    // Validar que la password no sea un string vacío
+    if (strlen(password) == 0)
+    {
+        enviarMensajeACliente(comm_socket, "Error al dar de alta el nuevo usuario: datos incompletos");
+        escribirLog(LOG_FILE, "Error al dar de alta el nuevo usuario: datos incompletos");
+        return -1;
+    }
+
+    escribirLog(LOG_FILE, "Password recibida");
+
+    // Usuario
+    strcpy(usuario.nombre, nombre);
+    strcpy(usuario.password, password);
+    strcpy(usuario.rol, rol);
+    usuario.activo = true;
+
+    if (existeUsuario(usuario.nombre) == 1)
+    {
+        enviarMensajeACliente(comm_socket, "El usuario que se intenta agregar ya existe");
+        escribirLog(LOG_FILE, "El usuario que se intenta agregar, ya existe, intente de nuevo");
+        return -1;
+    }
+
+    if (agregarUsuario(usuario) == 0)
+    {
+        enviarMensajeACliente(comm_socket, "Usuario insertado correctamente");
+        escribirLog(LOG_FILE, "Usuario insertado correctamente");
+    }
+    else
+    {
+        enviarMensajeACliente(comm_socket, "Error al insertar el usuario");
+        escribirLog(LOG_FILE, "Error al insertar el usuario");
+    }
+}
 void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
 {
 
@@ -168,6 +222,21 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
     if (strcmp(recvBuff, VER_FIGURITAS) == 0)
     {
         verFiguritas(comm_socket, usuario);
+    }
+
+    if (strcmp(recvBuff, VER_USUARIOS_ACTIVOS) == 0)
+    {
+        Usuario *usuarios = obtenerUsuariosActivos();
+
+        int usuariosActivos = 0;
+        while (usuarios[usuariosActivos].nombre[0] != '\0')
+        {
+            usuariosActivos++;
+        }
+    }
+    if (strcmp(recvBuff, INSERTAR_USUARIO) == 0)
+    {
+        insertarUsuario(comm_socket);
     }
 }
 

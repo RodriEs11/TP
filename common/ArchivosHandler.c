@@ -123,6 +123,25 @@ int escribirArchivo(const char *nombreArchivo, const char *linea)
     return 0;
 };
 
+int escribirArchivoSinFecha(const char *nombreArchivo, const char *linea)
+{
+    FILE *archivo = fopen(nombreArchivo, "a");
+    if (archivo == NULL)
+    {
+        printf("Error al abrir el archivo %s", nombreArchivo);
+        return -1;
+    }
+    if (fprintf(archivo, "%s\n", linea) < 0)
+    {
+        printf("Error al escribir en el archivo %s", nombreArchivo);
+        fclose(archivo);
+        return -1;
+    }
+
+    fclose(archivo);
+    return 0;
+};
+
 void escribirLog(char *logFile, const char *formato, ...)
 {
     // Crear un buffer para almacenar la línea formateada

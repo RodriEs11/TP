@@ -1,3 +1,2 @@
 r|123|admin|false
-ema|ema123|admin|true
-luna|luna123|coleccionista|false
+rodrigo|123456|coleccionista|true
