@@ -67,16 +67,20 @@ int obtenerUltimaFiguritaId()
     return maxId;
 };
 
-void agregarFigurita(Figurita figurita)
+
+// Agrega una figurita al archivo de figuritas
+// Devuelve 0 si tiene éxito, -1 si hay un error
+int agregarFigurita(Figurita figurita)
 {
     FILE *file = fopen(FIGURITAS_FILE, "a");
     if (file == NULL)
     {
         perror("Error al abrir el archivo");
-        return;
+        return -1;
     }
     fprintf(file, "%d;%s;%s;%s;%d\n", figurita.id, figurita.usuario, figurita.pais, figurita.jugador, figurita.disponible);
     fclose(file);
+    return 0;
 };
 
 void actualizarFigurita(Figurita figurita)

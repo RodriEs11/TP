@@ -4,9 +4,11 @@
 
 #include "../include/Rutas.h"
 #include "../include/Usuario.h"
+#include "../include/Figurita.h"
 
 #include "../../common/include/ArchivosHandler.h"
 #include "../../common/include/CmdStyle.h"
+#include "../../common/include/Requests.h"
 
 char sendBuff[512], recvBuff[512];
 
@@ -97,6 +99,78 @@ int configurarSocket()
     }
 }
 
+void insertarFigurita(SOCKET comm_socket, char *usuario)
+{
+    char *rol = obtenerRol(usuario);
+    char *accion = recvBuff;
+
+    enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita: ");
+    recibirMensaje(comm_socket);
+    char nombre[50];
+    strncpy(nombre, recvBuff, sizeof(nombre) - 1);
+    nombre[sizeof(nombre) - 1] = '\0';
+    escribirLog(LOG_FILE, "Nombre de la figurita: %s", nombre);
+
+    enviarMensajeACliente(comm_socket, "Introduce el pais de la figurita: ");
+    recibirMensaje(comm_socket);
+    char pais[50];
+    strncpy(pais, recvBuff, sizeof(pais) - 1);
+    pais[sizeof(pais) - 1] = '\0';
+    escribirLog(LOG_FILE, "Pais de la figurita: %s", pais);
+
+    enviarMensajeACliente(comm_socket, "Introduce si la figurita esta disponible (1: si, 0: no): ");
+    recibirMensaje(comm_socket);
+    int disponible = atoi(recvBuff);
+    escribirLog(LOG_FILE, "Disponible: %d", disponible);
+
+    // Figurita
+    Figurita figurita;
+    figurita.id = obtenerUltimaFiguritaId() + 1;
+    strcpy(figurita.usuario, usuario);
+    strcpy(figurita.pais, pais);
+    strcpy(figurita.jugador, nombre);
+    figurita.disponible = disponible;
+
+    if (agregarFigurita(figurita) == 0)
+    {
+        enviarMensajeACliente(comm_socket, "Figurita insertada correctamente");
+        escribirLog(LOG_FILE, "Figurita insertada correctamente");
+    }
+    else
+    {
+        enviarMensajeACliente(comm_socket, "Error al insertar la figurita");
+        escribirLog(LOG_FILE, "Error al insertar la figurita");
+    }
+}
+
+void verFiguritas(SOCKET comm_socket, char *usuario)
+{
+    Figurita *figuritas = obtenerFiguritasPorUsuario(usuario);
+    int count = obtenerFiguritasCount();
+
+    for (int i = 0; i < count; i++)
+    {
+        char buffer[512];
+        sprintf(buffer, "ID: %d, Jugador: %s, Pais: %s, Disponible: %d", figuritas[i].id, figuritas[i].jugador, figuritas[i].pais, figuritas[i].disponible);
+        enviarMensajeACliente(comm_socket, buffer);
+    }
+}
+
+void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
+{
+
+    // Insertar figurita
+    if (strcmp(recvBuff, INSERTAR_FIGURITA) == 0)
+    {
+        insertarFigurita(comm_socket, usuario);
+    }
+
+    if (strcmp(recvBuff, VER_FIGURITAS) == 0)
+    {
+        verFiguritas(comm_socket, usuario);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     configurarSocket();
@@ -150,10 +224,12 @@ int main(int argc, char *argv[])
             while (1)
             {
                 int bytesRecibidos = recibirMensaje(comm_socket);
+
                 if (bytesRecibidos > 0)
                 {
+
                     escribirLog(LOG_FILE, "[%s] %s: %s", mayusculas(rol), usuario, recvBuff);
-                    enviarMensajeACliente(comm_socket, "Mensaje recibido");
+                    manejarSolicitudes(comm_socket, recvBuff, usuario);
                 }
                 else
                 {

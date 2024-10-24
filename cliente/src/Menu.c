@@ -69,9 +69,9 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
     printColoredText(GREEN, "Conectado a %s\n", inet_ntoa(server.sin_addr));
 
     printColoredText(DEFAULT, "\n\nMenu Principal \\ Figuritas \\ Insertar Figurita\n");
-    printf("\n\n\n----- Insertar Figurita -----\n");
+    printf("\n\n\n----- Insertar Figurita -----\n\n");
 
-    printf("1. Nombre: ");
+    printf("Nombre: ");
 
     if (strlen(nombre) != 0)
     {
@@ -82,7 +82,7 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
         printColoredText(RED, "Requerido\n");
     }
 
-    printf("2. Pais: ");
+    printf("Pais: ");
     if (strlen(pais) != 0)
     {
         printColoredText(GREEN, "%s\n", pais);
@@ -92,7 +92,7 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
         printColoredText(RED, "Requerido\n");
     }
 
-    printf("3. Disponible: ");
+    printf("Disponible: ");
     if (disponible != -1)
     {
         printColoredText(GREEN, "%s\n", disponible == 1 ? "Si" : "No");
@@ -101,9 +101,8 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
     {
         printColoredText(RED, "Requerido\n");
     }
-    printf("\n9. Insertar\n");
-    printf("\n0. Volver\n");
-    printf("--------------------------\n");
+
+    printf("\n--------------------------\n");
 }
 
 #endif // MENU_H

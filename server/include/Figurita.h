@@ -15,7 +15,7 @@ typedef struct
 Figurita parsearFigurita(const char *texto);
 
 int obtenerUltimaFiguritaId();
-void agregarFigurita(Figurita figurita);
+int agregarFigurita(Figurita figurita);
 void actualizarFigurita(Figurita figurita);
 void eliminarFigurita(int id);
 Figurita* obtenerFiguritas();

@@ -8,6 +8,7 @@
 
 #include "../../common/include/CmdStyle.h"
 #include "../../common/include/Util.h"
+#include "../../common/include/Requests.h"
 
 char sendBuff[512], recvBuff[512];
 
@@ -15,6 +16,20 @@ WSADATA wsaData;
 SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
+
+
+void enviarMensajeAServidor(SOCKET conn_socket, const char *mensaje)
+{
+    send(conn_socket, mensaje, strlen(mensaje), 0);
+}
+
+int recibirMensaje(SOCKET conn_socket)
+{
+    int bytes = recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
+    recvBuff[bytes] = '\0'; // Agrega un caracter no nulo al final del buffer
+
+    return bytes;
+}
 
 int configurarSocket(char *direccion, int puerto)
 {
@@ -56,79 +71,62 @@ int configurarSocket(char *direccion, int puerto)
     server.sin_port = htons(puerto);
 }
 
-void insertarFigurita(SOCKET conn_socket, char *nombre, char *pais, int disponible)
+int insertarFigurita(SOCKET conn_socket)
 {
-    strcpy(sendBuff, nombre);
-    send(conn_socket, sendBuff, sizeof(nombre), 0);
+    char nombre[50], pais[50], disponible[50];
 
-    strcpy(sendBuff, pais);
-    send(conn_socket, pais, sizeof(pais), 0);
-
-    sprintf(sendBuff, "%d", disponible);
-    send(conn_socket, sendBuff, sizeof(disponible), 0);
+    mostrarMenuInsertarFigurita(server, "", "", -1);
 
 
-    recv(conn_socket, recvBuff, sizeof(recvBuff), 0);
-    printColoredText(BLUE, "\nRespuesta del servidor: ");
+    // Enviar solicitud de inserción de figurita
+    enviarMensajeAServidor(conn_socket, INSERTAR_FIGURITA);
+
+     // Introduce el nombre de la figurita
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(nombre, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuInsertarFigurita(server, nombre, "", -1);
+
+    // Introduce el pais de la figurita
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(pais, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuInsertarFigurita(server, nombre, pais, -1);
+
+    // Introduce si la figurita esta disponible
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(disponible, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+
+    recibirMensaje(conn_socket);
+    mostrarMenuInsertarFigurita(server, nombre, pais, atoi(disponible));
+
+    printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n", recvBuff);
     system("pause");
 }
 
-void opcionInsertarFigurita()
+int verFiguritas(SOCKET conn_socket)
 {
-    int opcion;
 
-    char nombre[50] = "";
-    char pais[50] = "";
-    int disponible = -1;
 
-    do
-    {
-        // Menu de insertar figurita
-        // 1. Nombre
-        // 2. Pais
-        // 3. Disponible
-        // 9. Insertar
-        // 0. Volver
+    enviarMensajeAServidor(conn_socket, VER_FIGURITAS);
 
-        mostrarMenuInsertarFigurita(server, nombre, pais, disponible);
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+    system("pause");
 
-        printf("Selecciona una opcion: ");
-        scanf("%d", &opcion);
 
-        switch (opcion)
-        {
-        case 1:
-
-            printf("Introduce el nombre de la figurita: ");
-            scanf("%s", nombre);
-
-            break;
-
-        case 2:
-            printf("Introduce el pais de la figurita: ");
-            scanf("%s", pais);
-            break;
-
-        case 3:
-            printf("Introduce si la figurita esta disponible 1 (si) / 0 (no): ");
-            scanf("%d", &disponible);
-
-            break;
-
-        case 9:
-            insertarFigurita(conn_socket, nombre, pais, disponible);
-            break;
-
-        case 0:
-            // Volver
-            break;
-
-        default:
-            printf("Opcion no valida. Intenta de nuevo.\n");
-        }
-
-    } while (opcion != 0);
 }
 
 void opcionFiguritas()
@@ -151,10 +149,11 @@ void opcionFiguritas()
         switch (opcion)
         {
         case 1:
-            opcionInsertarFigurita();
+            insertarFigurita(conn_socket);
             break;
 
         case 2:
+            verFiguritas(conn_socket);
             break;
 
         case 3:
