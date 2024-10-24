@@ -5,6 +5,7 @@
 #include "../include/Rutas.h"
 #include "../include/Usuario.h"
 #include "../include/Figurita.h"
+#include "../include/PeticionIntercambio.h"
 
 #include "../../common/include/ArchivosHandler.h"
 #include "../../common/include/CmdStyle.h"
@@ -195,19 +196,82 @@ int insertarUsuario(SOCKET comm_socket)
     if (existeUsuario(usuario.nombre) == 1)
     {
         enviarMensajeACliente(comm_socket, "El usuario que se intenta agregar ya existe");
-        escribirLog(LOG_FILE, "El usuario que se intenta agregar, ya existe, intente de nuevo");
+        escribirLog(LOG_FILE, "El usuario que se intenta agregar ya existe, intente de nuevo");
         return -1;
     }
 
     if (agregarUsuario(usuario) == 0)
     {
-        enviarMensajeACliente(comm_socket, "Usuario insertado correctamente");
-        escribirLog(LOG_FILE, "Usuario insertado correctamente");
+        char buffer[512];
+        sprintf(buffer, "Usuario %s insertado correctamente", usuario.nombre);
+        enviarMensajeACliente(comm_socket, buffer);
+        escribirLog(LOG_FILE, buffer);
     }
     else
     {
         enviarMensajeACliente(comm_socket, "Error al insertar el usuario");
         escribirLog(LOG_FILE, "Error al insertar el usuario");
+    }
+}
+
+int insertarPeticionIntercambio(SOCKET comm_socket, char *usuario)
+{
+    char nombreOf[50];
+    char paisOf[50];
+    char nombreReq[50];
+    char paisReq[50];
+    
+    enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres intercambiar: ");
+    recibirMensaje(comm_socket);
+
+    strncpy(nombreOf, recvBuff, sizeof(nombreOf) - 1);
+    nombreOf[sizeof(nombreOf) - 1] = '\0';
+    escribirLog(LOG_FILE, "Nombre de la figurita: %s", nombreOf);
+
+    enviarMensajeACliente(comm_socket, "Introduce el nombre del pais de la figurita que quieres intercambiar: ");
+    recibirMensaje(comm_socket);
+
+    strncpy(paisOf, recvBuff, sizeof(paisOf) - 1);
+    paisOf[sizeof(paisOf) - 1] = '\0';
+    escribirLog(LOG_FILE, "Pais de la figurita: %s", paisOf);
+
+    enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres recibir: ");
+    recibirMensaje(comm_socket);
+
+    strncpy(nombreReq, recvBuff, sizeof(nombreReq) - 1);
+    nombreReq[sizeof(nombreReq) - 1] = '\0';
+    escribirLog(LOG_FILE, "Nombre de la figurita a recibir: %s", nombreReq);
+
+    enviarMensajeACliente(comm_socket, "Introduce el nombre del pais de la figurita que quieres recibir: ");
+    recibirMensaje(comm_socket);
+
+    strncpy(paisReq, recvBuff, sizeof(paisReq) - 1);
+    paisReq[sizeof(paisReq) - 1] = '\0';
+    escribirLog(LOG_FILE, "Pais de la figurita a recibir: %s", paisReq);
+
+    // SE GUARDAN LOS DATOS EN EL ARCHIVO DE PETICIONES DE INTERCAMBIO
+    // CON EL FORMATO usuarioCreador;paisOf;jugadorOf;paisReq;jugadorReq;estado
+
+    PeticionIntercambio peticion;
+    strcpy(peticion.usuarioCreador, usuario);
+    strcpy(peticion.paisOf, paisOf);
+    strcpy(peticion.jugadorOf, nombreOf);
+    strcpy(peticion.paisReq, paisReq);
+    strcpy(peticion.jugadorReq, nombreReq);
+    strcpy(peticion.estado, "PENDIENTE");
+
+    // Agregar peticion
+    int validacionIntercambio = agregarPeticionIntercambio(peticion);
+
+    if (validacionIntercambio == 0)
+    {
+        enviarMensajeACliente(comm_socket, "Peticion de intercambio insertada correctamente");
+        escribirLog(LOG_FILE, "Peticion de intercambio insertada correctamente");
+    }
+    else
+    {
+        enviarMensajeACliente(comm_socket, "Error al insertar la peticion de intercambio");
+        escribirLog(LOG_FILE, "Error al insertar la peticion de intercambio");
     }
 }
 void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
@@ -226,6 +290,9 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
 
     if (strcmp(recvBuff, VER_USUARIOS_ACTIVOS) == 0)
     {
+
+        // TODO: Implementar
+
         Usuario *usuarios = obtenerUsuariosActivos();
 
         int usuariosActivos = 0;
@@ -237,6 +304,11 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
     if (strcmp(recvBuff, INSERTAR_USUARIO) == 0)
     {
         insertarUsuario(comm_socket);
+    }
+
+    if (strcmp(recvBuff, INSERTAR_PETICION_INTERCAMBIO) == 0)
+    {
+        insertarPeticionIntercambio(comm_socket, usuario);
     }
 }
 

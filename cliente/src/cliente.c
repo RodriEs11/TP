@@ -178,7 +178,6 @@ void opcionInsertarUsuario()
     scanf("%s", sendBuff);
     enviarMensajeAServidor(conn_socket, sendBuff);
 
-
     recibirMensaje(conn_socket); // Recibir mensaje de solicitud de password
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
@@ -193,8 +192,61 @@ void opcionInsertarUsuario()
 }
 void opcionBajaUsuario()
 {
+    // TODO: Implementar
 }
+void opcionPeticionIntercambio()
+{
 
+    char nombreOf[50];
+    char paisOf[50];
+    char nombreReq[50];
+    char paisReq[50];
+  
+    mostrarMenuPeticionIntercambio(server, "", "", "", "");
+    enviarMensajeAServidor(conn_socket, INSERTAR_PETICION_INTERCAMBIO);
+
+    // Introduce el nombre de la figurita a intercambiar
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(nombreOf, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuPeticionIntercambio(server, nombreOf, "", "", "");
+
+    // Introduce el nombre del pais de la figurita a intercambiar
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(paisOf, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, "", "");
+
+    // Introduce el nombre de la figurita a recibir
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(nombreReq, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, nombreReq, "");
+
+    // Introduce el nombre del pais de la figurita a recibir
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
+    scanf("%s", sendBuff);
+    strcpy(paisReq, sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, nombreReq, paisReq);
+
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+
+    system("pause");
+}
 int opcionConexionAlSocket()
 {
 
@@ -252,6 +304,7 @@ int opcionConexionAlSocket()
         // 2. Insertar usuario
         // 3. Baja de usuario
         // 4. Ver registro de actividades
+        // 5. Peticion de intercambio
         // 0. Cerrar sesion
         mostrarMenuConexion(server);
 
@@ -271,6 +324,9 @@ int opcionConexionAlSocket()
             break;
         case 4:
 
+            break;
+        case 5:
+            opcionPeticionIntercambio();
             break;
         case 0:
             break;

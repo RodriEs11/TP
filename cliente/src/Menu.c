@@ -41,6 +41,7 @@ void mostrarMenuConexion(struct sockaddr_in server)
     printf("2. Insertar usuario\n");
     printf("3. Baja de usuario\n");
     printf("4. Ver registro de actividades\n");
+    printf("5. Peticion de intercambio\n");
 
     printf("\n0. Cerrar sesion\n");
     printf("--------------------------\n");
@@ -105,16 +106,64 @@ void mostrarMenuInsertarFigurita(struct sockaddr_in server, char *nombre, char *
     printf("\n--------------------------\n");
 }
 
-void mostrarMenuBajaUsuario(struct sockaddr_in server )
+void mostrarMenuBajaUsuario(struct sockaddr_in server)
 {
     system("cls");
     printColoredText(GREEN, "Conectado a %s\n", inet_ntoa(server.sin_addr));
 
     printColoredText(DEFAULT, "\n\nMenu Principal \\ Baja de Usuario\n");
     printf("\n\n\n----- Baja de Usuario -----\n\n");
-
-
 }
 
+void mostrarMenuPeticionIntercambio(struct sockaddr_in server, char *nombreFigurita, char *paisFigurita, char *nombreFiguritaRecibir, char *paisFiguritaRecibir)
+{
+    system("cls");
+    printColoredText(GREEN, "Conectado a %s\n", inet_ntoa(server.sin_addr));
+
+    printColoredText(DEFAULT, "\n\nMenu Principal \\ Peticion de Intercambio\n");
+    printf("\n\n\n----- Peticion de Intercambio -----\n\n");
+
+    printf("Nombre de la figurita a intercambiar: ");
+    if (strlen(nombreFigurita) != 0)
+    {
+        printColoredText(GREEN, "%s\n", nombreFigurita);
+    }
+    else
+    {
+        printColoredText(RED, "Requerido\n");
+    }
+
+    printf("Pais de la figurita a intercambiar: ");
+    if (strlen(paisFigurita) != 0)
+    {
+        printColoredText(GREEN, "%s\n", paisFigurita);
+    }
+    else
+    {
+        printColoredText(RED, "Requerido\n");
+    }
+
+    printf("Nombre de la figurita a recibir: ");
+    if (strlen(nombreFiguritaRecibir) != 0)
+    {
+        printColoredText(GREEN, "%s\n", nombreFiguritaRecibir);
+    }
+    else
+    {
+        printColoredText(RED, "Requerido\n");
+    }
+
+    printf("Pais de la figurita a recibir: ");
+    if (strlen(paisFiguritaRecibir) != 0)
+    {
+        printColoredText(GREEN, "%s\n", paisFiguritaRecibir);
+    }
+    else
+    {
+        printColoredText(RED, "Requerido\n");
+    }
+
+    printf("\n--------------------------\n");
+}
 
 #endif // MENU_H
