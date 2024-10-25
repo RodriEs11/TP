@@ -17,6 +17,11 @@ SOCKET conn_socket;
 struct sockaddr_in server;
 struct hostent *host;
 
+void limpiarBuffer()
+{
+    memset(sendBuff, 0, sizeof(sendBuff));
+    memset(recvBuff, 0, sizeof(recvBuff));
+}
 void enviarMensajeAServidor(SOCKET conn_socket, const char *mensaje)
 {
     send(conn_socket, mensaje, strlen(mensaje), 0);
@@ -73,7 +78,7 @@ int configurarSocket(char *direccion, int puerto)
 int insertarFigurita(SOCKET conn_socket)
 {
     char nombre[50], pais[50], disponible[50];
-
+    limpiarBuffer();
     mostrarMenuInsertarFigurita(server, "", "", -1);
 
     // Enviar solicitud de inserción de figurita
@@ -115,13 +120,14 @@ int insertarFigurita(SOCKET conn_socket)
 
 int verFiguritas(SOCKET conn_socket)
 {
-
+    
     enviarMensajeAServidor(conn_socket, VER_FIGURITAS);
-
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n", recvBuff);
     system("pause");
+    
+    
 }
 
 void opcionFiguritas()
@@ -170,7 +176,7 @@ void opcionFiguritas()
 
 void opcionInsertarUsuario()
 {
-
+    limpiarBuffer();
     enviarMensajeAServidor(conn_socket, INSERTAR_USUARIO);
     recibirMensaje(conn_socket); // Recibir mensaje de solicitud de nombre de usuario
     printColoredText(BLUE, "[Server] ");
@@ -192,16 +198,32 @@ void opcionInsertarUsuario()
 }
 void opcionBajaUsuario()
 {
-    // TODO: Implementar
+   
+    mostrarMenuBajaUsuario(server);
+    enviarMensajeAServidor(conn_socket, BAJA_USUARIO);
+
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+    scanf("%s", sendBuff);
+    enviarMensajeAServidor(conn_socket, sendBuff);
+
+
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s\n\n", recvBuff);
+
+
+    system("pause");
 }
 void opcionPeticionIntercambio()
 {
-
+    
     char nombreOf[50];
     char paisOf[50];
     char nombreReq[50];
     char paisReq[50];
-  
+
     mostrarMenuPeticionIntercambio(server, "", "", "", "");
     enviarMensajeAServidor(conn_socket, INSERTAR_PETICION_INTERCAMBIO);
 

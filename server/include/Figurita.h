@@ -22,6 +22,7 @@ Figurita* obtenerFiguritas();
 int obtenerFiguritasCount();
 Figurita obtenerFiguritaPorId(int id);
 Figurita* obtenerFiguritasPorUsuario(char* usuario);
+char *figuritasToString(Figurita *figuritas, int numFiguritas);
 
 
 

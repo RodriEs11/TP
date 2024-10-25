@@ -57,8 +57,6 @@ void mostrarMenuFiguritas(struct sockaddr_in server)
     printf("\n\n----- Figuritas -----\n");
     printf("1. Insertar figurita\n");
     printf("2. Ver figuritas\n");
-    printf("3. Buscar figurita\n");
-    printf("4. Eliminar figurita\n");
 
     printf("\n0. Volver\n");
     printf("--------------------------\n");
@@ -113,6 +111,7 @@ void mostrarMenuBajaUsuario(struct sockaddr_in server)
 
     printColoredText(DEFAULT, "\n\nMenu Principal \\ Baja de Usuario\n");
     printf("\n\n\n----- Baja de Usuario -----\n\n");
+
 }
 
 void mostrarMenuPeticionIntercambio(struct sockaddr_in server, char *nombreFigurita, char *paisFigurita, char *nombreFiguritaRecibir, char *paisFiguritaRecibir)

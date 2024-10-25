@@ -1,2 +1,5 @@
-r|123|admin|false
-rodrigo|123456|coleccionista|true
+r|123|admin|true
+ema|123|admin|true
+jose|123|admin|true
+antonio|123|admin|true
+alan|123|coleccionista|true

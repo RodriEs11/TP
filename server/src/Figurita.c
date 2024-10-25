@@ -55,6 +55,13 @@ int obtenerUltimaFiguritaId()
 {
     char **lineas = separarLineas(FIGURITAS_FILE);
     int maxId = 0;
+
+    // Verificar si no hay figuritas
+    if (strcmp(lineas[0], "") == 0)
+    {
+        return maxId; // Retornar 0 si no hay figuritas
+    }
+
     for (int i = 0; lineas[i] != NULL; i++)
     {
         Figurita figurita = parsearFigurita(lineas[i]);
@@ -66,7 +73,6 @@ int obtenerUltimaFiguritaId()
 
     return maxId;
 };
-
 
 // Agrega una figurita al archivo de figuritas
 // Devuelve 0 si tiene éxito, -1 si hay un error
@@ -179,3 +185,44 @@ Figurita *obtenerFiguritasPorUsuario(char *usuario)
     return figuritas;
 };
 
+char *figuritasToString(Figurita *figuritas, int numFiguritas)
+{
+    if (figuritas == NULL || numFiguritas == 0)
+    {
+        char *noFiguritas = malloc(25);
+        strcpy(noFiguritas, "No hay figuritas");
+        return noFiguritas;
+    }
+
+    size_t bufferSize = 1024;
+    char *buffer = malloc(bufferSize);
+    if (buffer == NULL)
+    {
+        return NULL; // Asegúrate de manejar errores de asignación de memoria.
+    }
+    buffer[0] = '\0'; // Inicializa el buffer como una cadena vacía.
+
+    for (int i = 0; i < numFiguritas; i++)
+    {
+        char temp[512];
+        snprintf(temp, sizeof(temp), "ID: %d, Jugador: %s, Pais: %s, Disponible: %d\n",
+                 figuritas[i].id, figuritas[i].jugador, figuritas[i].pais, figuritas[i].disponible);
+
+        // Verifica si el buffer tiene suficiente espacio
+        if (strlen(buffer) + strlen(temp) + 1 > bufferSize)
+        {
+            bufferSize *= 2;
+            char *newBuffer = realloc(buffer, bufferSize);
+            if (newBuffer == NULL)
+            {
+                free(buffer);
+                return NULL; // Maneja el error de realloc.
+            }
+            buffer = newBuffer; // Actualiza el buffer con el nuevo tamaño.
+        }
+
+        strcat(buffer, temp); // Añade el nuevo registro al buffer.
+    }
+
+    return buffer;
+};

@@ -1,0 +1,3 @@
+r|argentina|messi|portugal|ronaldo|PENDIENTE
+r|argentina|messi|portugal|ronaldo|PENDIENTE
+alan|argentina|messi|argentina|julian|PENDIENTE

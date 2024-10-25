@@ -146,15 +146,16 @@ void insertarFigurita(SOCKET comm_socket, char *usuario)
 
 void verFiguritas(SOCKET comm_socket, char *usuario)
 {
-    Figurita *figuritas = obtenerFiguritasPorUsuario(usuario);
-    int count = obtenerFiguritasCount();
+    char *rol = obtenerRol(usuario);
+    char *accion = recvBuff;
 
-    for (int i = 0; i < count; i++)
-    {
-        char buffer[512];
-        sprintf(buffer, "ID: %d, Jugador: %s, Pais: %s, Disponible: %d", figuritas[i].id, figuritas[i].jugador, figuritas[i].pais, figuritas[i].disponible);
-        enviarMensajeACliente(comm_socket, buffer);
-    }
+    int figuritasCount = obtenerFiguritasCount();
+    char *lista = figuritasToString(obtenerFiguritas(), figuritasCount);
+    sprintf(lista, "\n%s\n", lista);
+
+    enviarMensajeACliente(comm_socket, lista);
+    escribirLog(LOG_FILE, "Figuritas enviadas al cliente");
+    
 }
 
 int insertarUsuario(SOCKET comm_socket)
@@ -220,7 +221,7 @@ int insertarPeticionIntercambio(SOCKET comm_socket, char *usuario)
     char paisOf[50];
     char nombreReq[50];
     char paisReq[50];
-    
+
     enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres intercambiar: ");
     recibirMensaje(comm_socket);
 
@@ -288,17 +289,35 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
         verFiguritas(comm_socket, usuario);
     }
 
-    if (strcmp(recvBuff, VER_USUARIOS_ACTIVOS) == 0)
+    if (strcmp(recvBuff, BAJA_USUARIO) == 0)
     {
 
-        // TODO: Implementar
+        int usuariosActivos = obtenerUsuariosActivosCount();
+        char *lista = usuariosToString(obtenerUsuariosActivos(), usuariosActivos);
+        sprintf(lista, "\n%s\nSeleccione el nombre del usuario a eliminar:", lista);
 
-        Usuario *usuarios = obtenerUsuariosActivos();
+        enviarMensajeACliente(comm_socket, lista);
 
-        int usuariosActivos = 0;
-        while (usuarios[usuariosActivos].nombre[0] != '\0')
+        recibirMensaje(comm_socket);
+        char usuarioAEliminar[40];
+        strncpy(usuarioAEliminar, recvBuff, sizeof(usuarioAEliminar) - 1);
+        usuarioAEliminar[sizeof(usuarioAEliminar) - 1] = '\0'; // Agrega un caracter no nulo al final del buffer
+
+        char buffer[100];
+        int resultado = eliminarUsuario(usuarioAEliminar);
+        if (resultado == 1)
         {
-            usuariosActivos++;
+
+            sprintf(buffer, "Usuario %s eliminado correctamente", usuarioAEliminar);
+            enviarMensajeACliente(comm_socket, buffer);
+            escribirLog(LOG_FILE, buffer);
+        }
+        else
+        {
+
+            sprintf(buffer, "Error al eliminar el usuario %s", usuarioAEliminar);
+            enviarMensajeACliente(comm_socket, buffer);
+            escribirLog(LOG_FILE, buffer);
         }
     }
     if (strcmp(recvBuff, INSERTAR_USUARIO) == 0)
