@@ -1,2 +1,3 @@
 r|123|admin|true
-alan|123|coleccionista|true
+SOLICITAR_ROL|emanuel|coleccionista|true
+ema|231|coleccionista|true

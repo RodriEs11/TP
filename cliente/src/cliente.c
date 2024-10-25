@@ -174,8 +174,22 @@ void opcionFiguritas()
 
 void opcionInsertarUsuario()
 {
+
     limpiarBuffer();
     enviarMensajeAServidor(conn_socket, INSERTAR_USUARIO);
+
+    // VALIDA QUE EL USUARIO TENGA PERMISOS DE ADMIN
+    enviarMensajeAServidor(conn_socket, SOLICITAR_ROL);
+    recibirMensaje(conn_socket);
+    if (strcmp(recvBuff, ADMIN_USER) != 0)
+    {
+        recibirMensaje(conn_socket);
+        printColoredText(BLUE, "[Server] ");
+        printColoredText(DEFAULT, "%s\n", recvBuff);
+        system("pause");
+        return;
+    }
+
     recibirMensaje(conn_socket); // Recibir mensaje de solicitud de nombre de usuario
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
@@ -285,13 +299,27 @@ void opcionRegistroActividades()
     char buffer[1024];
     int bytes_received;
 
+    // Validar el rol del usuario
+    enviarMensajeAServidor(conn_socket, SOLICITAR_ROL);
+    recibirMensaje(conn_socket);
+    if (strcmp(recvBuff, ADMIN_USER) != 0)
+    {
+        // Mostrar mensaje de error si el usuario no tiene permisos
+        recibirMensaje(conn_socket);
+        printColoredText(BLUE, "[Server] ");
+        printColoredText(DEFAULT, "%s\n", recvBuff);
+        system("pause");
+        return;
+    }
+
     while ((bytes_received = recv(conn_socket, buffer, sizeof(buffer) - 1, 0)) > 0)
     {
-        buffer[bytes_received] = '\0'; // Asegurarse de que el buffer esté terminado en nulo
+        buffer[bytes_received] = '\0';           // Asegurarse de que el buffer esté terminado en nulo
         printColoredText(DEFAULT, "%s", buffer); // Imprimir el contenido recibido
 
-         // Verificar si hemos recibido el mensaje de finalización
-        if (strstr(buffer, FIN) != NULL) {
+        // Verificar si hemos recibido el mensaje de finalización
+        if (strstr(buffer, FIN) != NULL)
+        {
             break; // Salir del bucle si se recibe el mensaje de finalización
         }
     }
@@ -305,10 +333,12 @@ void opcionRegistroActividades()
 
 int opcionConexionAlSocket()
 {
+    char usuario[50];
+    char rol[50];
 
     if (host == NULL)
     {
-        printColoredText(RED, "Host no configurado. Por favor, configure el host primero.");
+        printColoredText(RED, "Host no configurado. Por favor, configure el host primero.\n");
         system("pause");
         return -1;
     }
@@ -332,6 +362,7 @@ int opcionConexionAlSocket()
     // Enviar mensaje
     printf("Introduce tu nombre de usuario: ");
     scanf("%s", sendBuff);
+    strcpy(usuario, sendBuff);
     send(conn_socket, sendBuff, sizeof(sendBuff), 0);
 
     printf("Introduce tu password: ");
@@ -352,6 +383,7 @@ int opcionConexionAlSocket()
     }
 
     int opcion;
+
     do
     {
         // Menu de conexion
@@ -362,6 +394,7 @@ int opcionConexionAlSocket()
         // 4. Ver registro de actividades
         // 5. Peticion de intercambio
         // 0. Cerrar sesion
+
         mostrarMenuConexion(server);
 
         printf("Selecciona una opcion: ");
@@ -432,12 +465,14 @@ int main(int argc, char *argv[])
 
         switch (opcion)
         {
-            // Configurar host
+
         case 1:
+            // Configurar host
             opcionConfigurarSocket();
             break;
-            // Conectarse
+
         case 2:
+            // Conectarse
             configurarSocket("localhost", 6000);
             opcionConexionAlSocket();
             break;

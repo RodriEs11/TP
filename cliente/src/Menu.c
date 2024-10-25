@@ -8,6 +8,8 @@
 void mostrarMenuPrincipal(struct sockaddr_in server, struct hostent *host)
 {
     system("cls");
+    printColoredText(RED, "Modo offline\n");
+
     printf("\n\n----- Menu Principal -----\n");
     printf("1. Configurar host\n");
     printf("2. Conectarse\n");
@@ -111,7 +113,6 @@ void mostrarMenuBajaUsuario(struct sockaddr_in server)
 
     printColoredText(DEFAULT, "\n\nMenu Principal \\ Baja de Usuario\n");
     printf("\n\n\n----- Baja de Usuario -----\n\n");
-
 }
 
 void mostrarMenuPeticionIntercambio(struct sockaddr_in server, char *nombreFigurita, char *paisFigurita, char *nombreFiguritaRecibir, char *paisFiguritaRecibir)

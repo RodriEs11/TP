@@ -157,11 +157,24 @@ void verFiguritas(SOCKET comm_socket, char *usuario)
     escribirLog(LOG_FILE, "Figuritas enviadas al cliente");
 }
 
-int insertarUsuario(SOCKET comm_socket)
+int insertarUsuario(SOCKET comm_socket, char *usuario)
 {
+    // VALIDAR QUE EL USUARIO TENGA ROL DE ADMINISTRADOR
+    char *rol = obtenerRol(usuario);
+    enviarMensajeACliente(comm_socket, rol);
+    recibirMensaje(comm_socket);
 
-    Usuario usuario;
-    char rol[40] = "coleccionista";
+    
+
+    if (strcmp(rol, ADMIN_USER) != 0)
+    {
+        enviarMensajeACliente(comm_socket, "No tienes permisos para insertar un usuario");
+        escribirLog(LOG_FILE, "Usuario %s no tiene permisos para insertar un usuario", usuario);
+        return -1;
+    }
+
+    Usuario usuarioTemp;
+    char rolTemp[40] = "coleccionista";
 
     // Obtener credenciales de usuario
     enviarMensajeACliente(comm_socket, "Introduce el nombre de usuario: ");
@@ -188,22 +201,22 @@ int insertarUsuario(SOCKET comm_socket)
     escribirLog(LOG_FILE, "Password recibida");
 
     // Usuario
-    strcpy(usuario.nombre, nombre);
-    strcpy(usuario.password, password);
-    strcpy(usuario.rol, rol);
-    usuario.activo = true;
+    strcpy(usuarioTemp.nombre, nombre);
+    strcpy(usuarioTemp.password, password);
+    strcpy(usuarioTemp.rol, rolTemp);
+    usuarioTemp.activo = true;
 
-    if (existeUsuario(usuario.nombre) == 1)
+    if (existeUsuario(usuarioTemp.nombre) == 1)
     {
         enviarMensajeACliente(comm_socket, "El usuario que se intenta agregar ya existe");
         escribirLog(LOG_FILE, "El usuario que se intenta agregar ya existe, intente de nuevo");
         return -1;
     }
 
-    if (agregarUsuario(usuario) == 0)
+    if (agregarUsuario(usuarioTemp) == 0)
     {
         char buffer[512];
-        sprintf(buffer, "Usuario %s insertado correctamente", usuario.nombre);
+        sprintf(buffer, "Usuario %s insertado correctamente", usuarioTemp.nombre);
         enviarMensajeACliente(comm_socket, buffer);
         escribirLog(LOG_FILE, buffer);
     }
@@ -303,8 +316,10 @@ void bajaUsuario(SOCKET comm_socket, char *usuario)
     usuarioAEliminar[sizeof(usuarioAEliminar) - 1] = '\0'; // Agrega un caracter no nulo al final del buffer
 
     char buffer[100];
-    int resultado = eliminarUsuario(usuarioAEliminar);
-    if (resultado == 1)
+    int resultadoEliminarUsuario = eliminarUsuario(usuarioAEliminar);
+    int resultadoEstadoPeticionUsuario = modificarEstadoPeticionUsuario(usuarioAEliminar);
+
+    if (resultadoEliminarUsuario == 1)
     {
 
         sprintf(buffer, "Usuario %s eliminado correctamente", usuarioAEliminar);
@@ -314,15 +329,27 @@ void bajaUsuario(SOCKET comm_socket, char *usuario)
     else
     {
 
-        sprintf(buffer, "Error al eliminar el usuario %s", usuarioAEliminar);
+        sprintf(buffer, "Error al eliminar el usuario %s, no existe", usuarioAEliminar);
         enviarMensajeACliente(comm_socket, buffer);
         escribirLog(LOG_FILE, buffer);
+    }
+
+    if (resultadoEstadoPeticionUsuario == 1)
+    {
+        char buffer[100];
+        sprintf(buffer, "Peticiones de intercambio del usuario %s canceladas correctamente", usuarioAEliminar);
+        escribirLog(LOG_FILE, buffer);
+    }
+    else
+    {
+        escribirLog(LOG_FILE, "Error al cancelar las peticiones de intercambio del usuario, no existe el usuario");
     }
 }
 void verRegistroActividades(SOCKET comm_socket, char *usuario)
 {
     // VALIDA QUE EL USUARIO TENGA ROL DE ADMINISTRADOR
     char *rol = obtenerRol(usuario);
+    enviarMensajeACliente(comm_socket, rol);
     if (strcmp(rol, ADMIN_USER) != 0)
     {
         enviarMensajeACliente(comm_socket, "No tienes permisos para ver el registro de actividades");
@@ -367,7 +394,7 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
     }
     if (strcmp(recvBuff, INSERTAR_USUARIO) == 0)
     {
-        insertarUsuario(comm_socket);
+        insertarUsuario(comm_socket, usuario);
     }
 
     if (strcmp(recvBuff, INSERTAR_PETICION_INTERCAMBIO) == 0)

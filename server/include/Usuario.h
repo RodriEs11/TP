@@ -40,6 +40,11 @@ int existeUsuario(char *nombre);
 // Convertir un array de usuarios a un string
 char *usuariosToString(Usuario *usuarios, int numUsuarios);
 
+// Modificar el estado de una petición de intercambio
+// Retorna 1 si tiene éxito, -1 si hay un error
+// Cuando se elimina un usuario, busca una peticion a su nombre, y la cambia a CANCELADO
+int modificarEstadoPeticionUsuario(const char *usuario);
+
 // Eliminar un usuario
 int eliminarUsuario(const char *nombreUsuario);
 

@@ -192,14 +192,67 @@ char *usuariosToString(Usuario *usuarios, int numUsuarios)
 
     return buffer;
 };
+int modificarEstadoPeticionUsuario(const char *nombre_usuario)
+{
+    FILE *archivo_original = fopen(PETICIONES_INTERCAMBIO_FILE, "r");
+    FILE *archivo_temporal = fopen("temp.txt", "w");
 
+    if (archivo_original == NULL || archivo_temporal == NULL)
+    {
+        perror("Error al abrir el archivo");
+        return -1;
+    }
+
+    char linea[256];
+    int usuario_encontrado = 0; // Variable para controlar si encontramos el usuario
+
+    while (fgets(linea, sizeof(linea), archivo_original) != NULL)
+    {
+        // Copia la línea original para modificarla si es necesario
+        char linea_modificada[256];
+        strcpy(linea_modificada, linea);
+
+        // Verificar si la línea comienza con el nombre de usuario
+        char *usuario = strtok(linea, "|");
+        if (usuario != NULL && strcmp(usuario, nombre_usuario) == 0)
+        {
+
+            usuario_encontrado = 1; // Se encontró el usuario
+
+            // Busca el estado en la línea
+            char *estado = strrchr(linea_modificada, '|');
+            if (estado != NULL)
+            {
+                // Cambiar PENDIENTE a CANCELADO
+                estado++; // Mover el puntero al inicio del estado
+                if (strcmp(estado, "PENDIENTE\n") == 0)
+                {
+                    strcpy(estado, "CANCELADA\n"); // Cambiar a CANCELADO
+                }
+            }
+        }
+
+        // Escribir la línea (modificada o no) en el archivo temporal
+        fprintf(archivo_temporal, "%s", linea_modificada);
+    }
+    fclose(archivo_original);
+    fclose(archivo_temporal);
+
+    // Reemplazar el archivo original con el temporal
+    remove(PETICIONES_INTERCAMBIO_FILE);
+    rename("temp.txt", PETICIONES_INTERCAMBIO_FILE);
+
+    
+    return usuario_encontrado ? 1 : -1;
+}
 // Función para eliminar un usuario por nombre
 int eliminarUsuario(const char *nombreUsuario)
 {
-     FILE *archivo_original = fopen(AUTENTICACION_FILE, "r");
+    FILE *archivo_original = fopen(AUTENTICACION_FILE, "r");
     FILE *archivo_temp = fopen("temp.txt", "w");
 
-    if (archivo_original == NULL || archivo_temp == NULL) {
+    if (archivo_original == NULL || archivo_temp == NULL)
+    {
         perror("Error al abrir los archivos");
         return -1;
     }
@@ -207,11 +260,15 @@ int eliminarUsuario(const char *nombreUsuario)
     char linea[256];
     int encontrado = 0;
 
-    while (fgets(linea, sizeof(linea), archivo_original)) {
+    while (fgets(linea, sizeof(linea), archivo_original))
+    {
         // Comprobar si la línea empieza con el nombre de usuario
-        if (strncmp(linea, nombreUsuario, strlen(nombreUsuario)) != 0 || linea[strlen(nombreUsuario)] != '|') {
+        if (strncmp(linea, nombreUsuario, strlen(nombreUsuario)) != 0 || linea[strlen(nombreUsuario)] != '|')
+        {
             fputs(linea, archivo_temp); // Escribir la línea en el archivo temporal
-        } else {
+        }
+        else
+        {
             encontrado = 1; // Se encontró el usuario a eliminar
         }
     }
@@ -220,13 +277,15 @@ int eliminarUsuario(const char *nombreUsuario)
     fclose(archivo_temp);
 
     // Reemplazar el archivo original por el temporal
-    if (encontrado) {
-        remove(AUTENTICACION_FILE); // Eliminar el archivo original
+    if (encontrado)
+    {
+        remove(AUTENTICACION_FILE);             // Eliminar el archivo original
         rename("temp.txt", AUTENTICACION_FILE); // Renombrar el archivo temporal
-        printf("Usuario '%s' eliminado exitosamente.\n", nombreUsuario);
-    } else {
+    }
+    else
+    {
         remove("temp.txt"); // Si no se encontró, eliminar el archivo temporal
-        printf("Usuario '%s' no encontrado.\n", nombreUsuario);
+        return -1;
     }
 
     return 1;
