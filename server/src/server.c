@@ -155,7 +155,6 @@ void verFiguritas(SOCKET comm_socket, char *usuario)
 
     enviarMensajeACliente(comm_socket, lista);
     escribirLog(LOG_FILE, "Figuritas enviadas al cliente");
-    
 }
 
 int insertarUsuario(SOCKET comm_socket)
@@ -275,6 +274,78 @@ int insertarPeticionIntercambio(SOCKET comm_socket, char *usuario)
         escribirLog(LOG_FILE, "Error al insertar la peticion de intercambio");
     }
 }
+
+void bajaUsuario(SOCKET comm_socket, char *usuario)
+{
+    recibirMensaje(comm_socket);
+
+    char *rol = obtenerRol(usuario);
+    if (strcmp(recvBuff, SOLICITAR_ROL) == 0)
+    {
+        enviarMensajeACliente(comm_socket, rol);
+    }
+
+    if (strcmp(rol, ADMIN_USER) != 0)
+    {
+        enviarMensajeACliente(comm_socket, "No tienes permisos para dar de baja un usuario");
+        escribirLog(LOG_FILE, "Usuario %s no tiene permisos para dar de baja un usuario", usuario);
+        return;
+    }
+    int usuariosActivos = obtenerUsuariosActivosCount();
+    char *lista = usuariosToString(obtenerUsuariosActivos(), usuariosActivos);
+    sprintf(lista, "\n%s\nSeleccione el nombre del usuario a eliminar:", lista);
+
+    enviarMensajeACliente(comm_socket, lista);
+
+    recibirMensaje(comm_socket);
+    char usuarioAEliminar[40];
+    strncpy(usuarioAEliminar, recvBuff, sizeof(usuarioAEliminar) - 1);
+    usuarioAEliminar[sizeof(usuarioAEliminar) - 1] = '\0'; // Agrega un caracter no nulo al final del buffer
+
+    char buffer[100];
+    int resultado = eliminarUsuario(usuarioAEliminar);
+    if (resultado == 1)
+    {
+
+        sprintf(buffer, "Usuario %s eliminado correctamente", usuarioAEliminar);
+        enviarMensajeACliente(comm_socket, buffer);
+        escribirLog(LOG_FILE, buffer);
+    }
+    else
+    {
+
+        sprintf(buffer, "Error al eliminar el usuario %s", usuarioAEliminar);
+        enviarMensajeACliente(comm_socket, buffer);
+        escribirLog(LOG_FILE, buffer);
+    }
+}
+void verRegistroActividades(SOCKET comm_socket, char *usuario)
+{
+    // VALIDA QUE EL USUARIO TENGA ROL DE ADMINISTRADOR
+    char *rol = obtenerRol(usuario);
+    if (strcmp(rol, ADMIN_USER) != 0)
+    {
+        enviarMensajeACliente(comm_socket, "No tienes permisos para ver el registro de actividades");
+        escribirLog(LOG_FILE, "Usuario %s no tiene permisos para ver el registro de actividades", usuario);
+        return;
+    }
+    FILE *file = fopen(LOG_FILE, "r");
+    if (file == NULL)
+    {
+        perror("Error al abrir el archivo LOG");
+        return;
+    }
+
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), file) != NULL)
+    {
+        enviarMensajeACliente(comm_socket, buffer);
+    }
+    enviarMensajeACliente(comm_socket, FIN);
+    fclose(file);
+    escribirLog(LOG_FILE, "Registro de actividades enviado al cliente");
+}
+
 void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
 {
 
@@ -292,33 +363,7 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
     if (strcmp(recvBuff, BAJA_USUARIO) == 0)
     {
 
-        int usuariosActivos = obtenerUsuariosActivosCount();
-        char *lista = usuariosToString(obtenerUsuariosActivos(), usuariosActivos);
-        sprintf(lista, "\n%s\nSeleccione el nombre del usuario a eliminar:", lista);
-
-        enviarMensajeACliente(comm_socket, lista);
-
-        recibirMensaje(comm_socket);
-        char usuarioAEliminar[40];
-        strncpy(usuarioAEliminar, recvBuff, sizeof(usuarioAEliminar) - 1);
-        usuarioAEliminar[sizeof(usuarioAEliminar) - 1] = '\0'; // Agrega un caracter no nulo al final del buffer
-
-        char buffer[100];
-        int resultado = eliminarUsuario(usuarioAEliminar);
-        if (resultado == 1)
-        {
-
-            sprintf(buffer, "Usuario %s eliminado correctamente", usuarioAEliminar);
-            enviarMensajeACliente(comm_socket, buffer);
-            escribirLog(LOG_FILE, buffer);
-        }
-        else
-        {
-
-            sprintf(buffer, "Error al eliminar el usuario %s", usuarioAEliminar);
-            enviarMensajeACliente(comm_socket, buffer);
-            escribirLog(LOG_FILE, buffer);
-        }
+        bajaUsuario(comm_socket, usuario);
     }
     if (strcmp(recvBuff, INSERTAR_USUARIO) == 0)
     {
@@ -328,6 +373,11 @@ void manejarSolicitudes(SOCKET comm_socket, char *recvBuff, char *usuario)
     if (strcmp(recvBuff, INSERTAR_PETICION_INTERCAMBIO) == 0)
     {
         insertarPeticionIntercambio(comm_socket, usuario);
+    }
+
+    if (strcmp(recvBuff, VER_REGISTRO_ACTIVIDADES) == 0)
+    {
+        verRegistroActividades(comm_socket, usuario);
     }
 }
 

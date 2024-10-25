@@ -120,14 +120,12 @@ int insertarFigurita(SOCKET conn_socket)
 
 int verFiguritas(SOCKET conn_socket)
 {
-    
+
     enviarMensajeAServidor(conn_socket, VER_FIGURITAS);
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n", recvBuff);
     system("pause");
-    
-    
 }
 
 void opcionFiguritas()
@@ -198,9 +196,21 @@ void opcionInsertarUsuario()
 }
 void opcionBajaUsuario()
 {
-   
+
     mostrarMenuBajaUsuario(server);
     enviarMensajeAServidor(conn_socket, BAJA_USUARIO);
+
+    enviarMensajeAServidor(conn_socket, SOLICITAR_ROL);
+    recibirMensaje(conn_socket);
+    if (strcmp(recvBuff, ADMIN_USER) != 0)
+    {
+        recibirMensaje(conn_socket);
+        printColoredText(BLUE, "[Server] ");
+        printColoredText(DEFAULT, "%s\n", recvBuff);
+
+        system("pause");
+        return;
+    }
 
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
@@ -208,17 +218,15 @@ void opcionBajaUsuario()
     scanf("%s", sendBuff);
     enviarMensajeAServidor(conn_socket, sendBuff);
 
-
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n\n", recvBuff);
-
 
     system("pause");
 }
 void opcionPeticionIntercambio()
 {
-    
+
     char nombreOf[50];
     char paisOf[50];
     char nombreReq[50];
@@ -269,6 +277,32 @@ void opcionPeticionIntercambio()
 
     system("pause");
 }
+
+void opcionRegistroActividades()
+{
+    enviarMensajeAServidor(conn_socket, VER_REGISTRO_ACTIVIDADES);
+
+    char buffer[1024];
+    int bytes_received;
+
+    while ((bytes_received = recv(conn_socket, buffer, sizeof(buffer) - 1, 0)) > 0)
+    {
+        buffer[bytes_received] = '\0'; // Asegurarse de que el buffer esté terminado en nulo
+        printColoredText(DEFAULT, "%s", buffer); // Imprimir el contenido recibido
+
+         // Verificar si hemos recibido el mensaje de finalización
+        if (strstr(buffer, FIN) != NULL) {
+            break; // Salir del bucle si se recibe el mensaje de finalización
+        }
+    }
+
+    if (bytes_received < 0)
+    {
+        printColoredText(RED, "Error al recibir los datos del servidor\n");
+    }
+    system("pause");
+}
+
 int opcionConexionAlSocket()
 {
 
@@ -345,7 +379,7 @@ int opcionConexionAlSocket()
             opcionBajaUsuario();
             break;
         case 4:
-
+            opcionRegistroActividades();
             break;
         case 5:
             opcionPeticionIntercambio();
