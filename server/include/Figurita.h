@@ -18,12 +18,12 @@ int obtenerUltimaFiguritaId();
 int agregarFigurita(Figurita figurita);
 void actualizarFigurita(Figurita figurita);
 void eliminarFigurita(int id);
-Figurita* obtenerFiguritas();
+Figurita *obtenerFiguritas();
 int obtenerFiguritasCount();
 Figurita obtenerFiguritaPorId(int id);
-Figurita* obtenerFiguritasPorUsuario(char* usuario);
+Figurita *obtenerFiguritasPorUsuario(char *usuario);
 char *figuritasToString(Figurita *figuritas, int numFiguritas);
-
-
+char *figuritasToStringByUsuario(Figurita *figuritas, int numFiguritas, const char *usuarioFiltro);
+char *figuritasToStringByUsuarioByDisponible(Figurita *figuritas, int numFiguritas, const char *usuarioFiltro, int disponibleFiltro);
 
 #endif // FIGURITA_H

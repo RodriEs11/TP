@@ -136,8 +136,6 @@ void opcionFiguritas()
         // Menu de figuritas
         // 1. Insertar figurita
         // 2. Ver figuritas
-        // 3. Buscar figurita
-        // 4. Eliminar figurita
         // 0. Volver
 
         mostrarMenuFiguritas(server);
@@ -154,13 +152,6 @@ void opcionFiguritas()
         case 2:
             verFiguritas(conn_socket);
             break;
-
-        case 3:
-            break;
-
-        case 4:
-            break;
-
         case 0:
             // Volver
             break;
@@ -238,9 +229,9 @@ void opcionBajaUsuario()
 
     system("pause");
 }
-void opcionPeticionIntercambio()
-{
 
+void peticionIntercambio()
+{
     char nombreOf[50];
     char paisOf[50];
     char nombreReq[50];
@@ -248,48 +239,88 @@ void opcionPeticionIntercambio()
 
     mostrarMenuPeticionIntercambio(server, "", "", "", "");
     enviarMensajeAServidor(conn_socket, INSERTAR_PETICION_INTERCAMBIO);
+    recibirMensaje(conn_socket);
+    
+    // Ver figuritas
+    enviarMensajeAServidor(conn_socket, VER_FIGURITAS);
+    recibirMensaje(conn_socket);
+    printColoredText(BLUE, "[Server] ");
+    printColoredText(DEFAULT, "%s", recvBuff);
 
-    // Introduce el nombre de la figurita a intercambiar
+    recibirMensaje(conn_socket);
+    enviarMensajeAServidor(conn_socket, "OK");
+
+     // Introduce el id de la figurita a intercambiar
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
     scanf("%s", sendBuff);
-    strcpy(nombreOf, sendBuff);
     enviarMensajeAServidor(conn_socket, sendBuff);
-    mostrarMenuPeticionIntercambio(server, nombreOf, "", "", "");
 
-    // Introduce el nombre del pais de la figurita a intercambiar
+     // Introduce el nombre de la figurita a recibir
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
     scanf("%s", sendBuff);
-    strcpy(paisOf, sendBuff);
     enviarMensajeAServidor(conn_socket, sendBuff);
-    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, "", "");
 
-    // Introduce el nombre de la figurita a recibir
+
+
+    // Introduce el pais de la figurita a recibir
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s", recvBuff);
     scanf("%s", sendBuff);
-    strcpy(nombreReq, sendBuff);
     enviarMensajeAServidor(conn_socket, sendBuff);
-    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, nombreReq, "");
-
-    // Introduce el nombre del pais de la figurita a recibir
+    
+    // Mensaje de confirmación
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
-    printColoredText(DEFAULT, "%s", recvBuff);
-    scanf("%s", sendBuff);
-    strcpy(paisReq, sendBuff);
-    enviarMensajeAServidor(conn_socket, sendBuff);
-    mostrarMenuPeticionIntercambio(server, nombreOf, paisOf, nombreReq, paisReq);
+    printColoredText(DEFAULT, "%s\n", recvBuff);
+
+
+
+    system("pause");
+}
+
+void cancelarPeticionIntercambio()
+{
+    mostrarMenuCancelarPeticionIntercambio(server);
+    enviarMensajeAServidor(conn_socket, CANCELAR_PETICION_INTERCAMBIO);
 
     recibirMensaje(conn_socket);
     printColoredText(BLUE, "[Server] ");
     printColoredText(DEFAULT, "%s\n", recvBuff);
 
     system("pause");
+}
+
+void opcionIntercambio()
+{
+
+    int opcion;
+    do
+    {
+        mostrarMenuIntercambio(server);
+        printf("Selecciona una opcion: ");
+        scanf("%d", &opcion);
+
+        switch (opcion)
+        {
+        case 1:
+            peticionIntercambio();
+            break;
+        case 2:
+            cancelarPeticionIntercambio();
+            break;
+        case 0:
+            // Volver
+            break;
+        default:
+            printf("Opcion no valida. Intenta de nuevo.\n");
+        }
+
+    } while (opcion != 0);
 }
 
 void opcionRegistroActividades()
@@ -415,7 +446,7 @@ int opcionConexionAlSocket()
             opcionRegistroActividades();
             break;
         case 5:
-            opcionPeticionIntercambio();
+            opcionIntercambio();
             break;
         case 0:
             break;
@@ -473,7 +504,6 @@ int main(int argc, char *argv[])
 
         case 2:
             // Conectarse
-            configurarSocket("localhost", 6000);
             opcionConexionAlSocket();
             break;
 

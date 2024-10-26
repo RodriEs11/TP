@@ -1,9 +1,2 @@
 r|argentina|messi|portugal|ronaldo|PENDIENTE
-alan|portugal|ronaldo|argentina|messi|CANCELADA
-alan|portugal|ronaldo|argentina|messi|CANCELADA
-alan|portugal|ronaldo|argentina|messi|CANCELADA
-jose|portugal|ronaldo|argentina|messi|CANCELADA
-alan|portugal|ronaldo|argentina|messi|CANCELADA
-ema|francia|mbape|argentina|messi|CANCELADA
-r|argentina|messi|portugal|ronaldo|PENDIENTE
-r|argentina|messi|portugal|ronaldo|PENDIENTE
+roberto|portugal|ronaldo|argentina|messi|PENDIENTE

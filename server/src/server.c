@@ -150,8 +150,8 @@ void verFiguritas(SOCKET comm_socket, char *usuario)
     char *accion = recvBuff;
 
     int figuritasCount = obtenerFiguritasCount();
-    char *lista = figuritasToString(obtenerFiguritas(), figuritasCount);
-    sprintf(lista, "\n%s\n", lista);
+    char *lista = figuritasToStringByUsuarioByDisponible(obtenerFiguritas(), figuritasCount, usuario, 1);
+    sprintf(lista, "%s\n", lista);
 
     enviarMensajeACliente(comm_socket, lista);
     escribirLog(LOG_FILE, "Figuritas enviadas al cliente");
@@ -163,8 +163,6 @@ int insertarUsuario(SOCKET comm_socket, char *usuario)
     char *rol = obtenerRol(usuario);
     enviarMensajeACliente(comm_socket, rol);
     recibirMensaje(comm_socket);
-
-    
 
     if (strcmp(rol, ADMIN_USER) != 0)
     {
@@ -226,60 +224,181 @@ int insertarUsuario(SOCKET comm_socket, char *usuario)
         escribirLog(LOG_FILE, "Error al insertar el usuario");
     }
 }
+int actualizarPeticionIntercambio(PeticionIntercambio peticion)
+{
+    FILE *archivo = fopen(PETICIONES_INTERCAMBIO_FILE, "r+");
+    if (archivo == NULL)
+    {
+        return -1; // Error al abrir el archivo
+    }
 
+    // Crear un archivo temporal para escribir las actualizaciones
+    FILE *temp = fopen("temp.txt", "w");
+    if (temp == NULL)
+    {
+        fclose(archivo);
+        return -1; // Error al crear el archivo temporal
+    }
+
+    char linea[256];
+    int actualizada = 0;
+
+    // Leer línea por línea del archivo original
+    while (fgets(linea, sizeof(linea), archivo))
+    {
+        char usuario[50], paisO[50], jugadorO[50], paisR[50], jugadorR[50], estado[50];
+        sscanf(linea, "%49[^|]|%49[^|]|%49[^|]|%49[^|]|%49[^|]|%49[^\n]", usuario, paisO, jugadorO, paisR, jugadorR, estado);
+
+        // Verificar si la línea corresponde a la petición que se quiere actualizar
+        if (strcmp(usuario, peticion.usuarioCreador) == 0 && strcmp(paisO, peticion.paisOf) == 0 && strcmp(jugadorO, peticion.jugadorOf) == 0)
+        {
+            // Escribir la línea actualizada en el archivo temporal
+            fprintf(temp, "%s|%s|%s|%s|%s|%s\n", peticion.usuarioCreador, peticion.paisOf, peticion.jugadorOf, peticion.paisReq, peticion.jugadorReq, peticion.estado);
+            actualizada = 1; // Marcar que se ha actualizado
+        }
+        else
+        {
+            // Escribir la línea original en el archivo temporal
+            fputs(linea, temp);
+        }
+    }
+
+    fclose(archivo); // Cerrar el archivo original
+    fclose(temp);    // Cerrar el archivo temporal
+
+    // Solo renombrar si se ha realizado una actualización
+    if (actualizada)
+    {
+        // Eliminar el archivo original
+        remove(PETICIONES_INTERCAMBIO_FILE);
+        
+        rename("temp.txt", PETICIONES_INTERCAMBIO_FILE);
+    }
+    else
+    {
+        // Si no se actualizó, eliminar el archivo temporal
+        remove("temp.txt");
+    }
+
+    return actualizada ? 0 : 1; // Retornar el estado
+}
+int emparejarPeticionesIntercambio()
+{
+    PeticionIntercambio *peticiones = obtenerPeticionesIntercambio();
+    int peticionesCount = obtenerPeticionesIntercambioCount();
+
+    for (int i = 0; i < peticionesCount; i++)
+    {
+        if (strcmp(peticiones[i].estado, "PENDIENTE") == 0)
+        {
+            for (int j = i + 1; j < peticionesCount; j++)
+            {
+                if (strcmp(peticiones[j].estado, "PENDIENTE") == 0 &&
+                    strcmp(peticiones[i].paisReq, peticiones[j].paisOf) == 0 &&
+                    strcmp(peticiones[i].jugadorReq, peticiones[j].jugadorOf) == 0 &&
+                    strcmp(peticiones[i].paisOf, peticiones[j].paisReq) == 0 &&
+                    strcmp(peticiones[i].jugadorOf, peticiones[j].jugadorReq) == 0)
+                {
+                    // Marcar peticiones como REALIZADA
+                    strcpy(peticiones[i].estado, "REALIZADA");
+                    strcpy(peticiones[j].estado, "REALIZADA");
+
+                    // Actualizar peticiones en el archivo
+                    int result1 = actualizarPeticionIntercambio(peticiones[i]);
+                    int result2 = actualizarPeticionIntercambio(peticiones[j]);
+
+                    if (result1 == 0 && result2 == 0)
+                    {
+                        escribirLog(LOG_FILE, "Intercambio realizado entre %s y %s", peticiones[i].usuarioCreador, peticiones[j].usuarioCreador);
+                    }
+                    else
+                    {
+                        // Manejar el error de actualización
+                        escribirLog(LOG_FILE, "Error al actualizar el intercambio entre %s y %s", peticiones[i].usuarioCreador, peticiones[j].usuarioCreador);
+                    }
+                }
+            }
+        }
+    }
+
+    return 1; // Retornar éxito
+}
 int insertarPeticionIntercambio(SOCKET comm_socket, char *usuario)
 {
     char nombreOf[50];
     char paisOf[50];
     char nombreReq[50];
     char paisReq[50];
+    int opcion;
+    Figurita figurita;
 
-    enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres intercambiar: ");
+    enviarMensajeACliente(comm_socket, OK);
     recibirMensaje(comm_socket);
 
-    strncpy(nombreOf, recvBuff, sizeof(nombreOf) - 1);
-    nombreOf[sizeof(nombreOf) - 1] = '\0';
-    escribirLog(LOG_FILE, "Nombre de la figurita: %s", nombreOf);
+    if (strcmp(recvBuff, VER_FIGURITAS) == 0)
+    {
 
-    enviarMensajeACliente(comm_socket, "Introduce el nombre del pais de la figurita que quieres intercambiar: ");
+        // Envia figuritas disponibles del usuario al cliente
+        verFiguritas(comm_socket, usuario);
+        enviarMensajeACliente(comm_socket, OK);
+    }
+
     recibirMensaje(comm_socket);
+    if (strcmp(recvBuff, OK) == 0)
+    {
+        enviarMensajeACliente(comm_socket, "Introduce el id de la figurita que quieres intercambiar: ");
+        recibirMensaje(comm_socket);
+        opcion = atoi(recvBuff);
+        escribirLog(LOG_FILE, "Id de la figurita a intercambiar: %d", opcion);
 
-    strncpy(paisOf, recvBuff, sizeof(paisOf) - 1);
-    paisOf[sizeof(paisOf) - 1] = '\0';
-    escribirLog(LOG_FILE, "Pais de la figurita: %s", paisOf);
+        enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres recibir: ");
+        recibirMensaje(comm_socket);
+        strncpy(nombreReq, recvBuff, sizeof(nombreReq) - 1);
+        nombreReq[sizeof(nombreReq) - 1] = '\0';
+        escribirLog(LOG_FILE, "Nombre de la figurita a recibir: %s", nombreReq);
 
-    enviarMensajeACliente(comm_socket, "Introduce el nombre de la figurita que quieres recibir: ");
-    recibirMensaje(comm_socket);
+        enviarMensajeACliente(comm_socket, "Introduce el pais de la figurita que quieres recibir: ");
+        recibirMensaje(comm_socket);
+        strncpy(paisReq, recvBuff, sizeof(paisReq) - 1);
+        paisReq[sizeof(paisReq) - 1] = '\0';
+        escribirLog(LOG_FILE, "Pais de la figurita a recibir: %s", paisReq);
+    }
 
-    strncpy(nombreReq, recvBuff, sizeof(nombreReq) - 1);
-    nombreReq[sizeof(nombreReq) - 1] = '\0';
-    escribirLog(LOG_FILE, "Nombre de la figurita a recibir: %s", nombreReq);
+    figurita = obtenerFiguritaPorId(opcion);
 
-    enviarMensajeACliente(comm_socket, "Introduce el nombre del pais de la figurita que quieres recibir: ");
-    recibirMensaje(comm_socket);
-
-    strncpy(paisReq, recvBuff, sizeof(paisReq) - 1);
-    paisReq[sizeof(paisReq) - 1] = '\0';
-    escribirLog(LOG_FILE, "Pais de la figurita a recibir: %s", paisReq);
+    strcpy(nombreOf, figurita.jugador);
+    strcpy(paisOf, figurita.pais);
 
     // SE GUARDAN LOS DATOS EN EL ARCHIVO DE PETICIONES DE INTERCAMBIO
-    // CON EL FORMATO usuarioCreador;paisOf;jugadorOf;paisReq;jugadorReq;estado
-
+    // CON EL FORMATO usuarioCreador|paisOf|jugadorOf|paisReq|jugadorReq|estado
     PeticionIntercambio peticion;
     strcpy(peticion.usuarioCreador, usuario);
-    strcpy(peticion.paisOf, paisOf);
-    strcpy(peticion.jugadorOf, nombreOf);
+    strcpy(peticion.paisOf, figurita.pais);
+    strcpy(peticion.jugadorOf, figurita.jugador);
     strcpy(peticion.paisReq, paisReq);
     strcpy(peticion.jugadorReq, nombreReq);
     strcpy(peticion.estado, "PENDIENTE");
 
-    // Agregar peticion
     int validacionIntercambio = agregarPeticionIntercambio(peticion);
 
-    if (validacionIntercambio == 0)
+    if (validacionIntercambio == 1)
     {
         enviarMensajeACliente(comm_socket, "Peticion de intercambio insertada correctamente");
         escribirLog(LOG_FILE, "Peticion de intercambio insertada correctamente");
+    }
+    else if (validacionIntercambio == 2)
+    {
+        enviarMensajeACliente(comm_socket, "La peticion de intercambio ya existe, buscando intercambio...");
+        escribirLog(LOG_FILE, "La peticion de intercambio ya existe, buscando intercambio...");
+        int emparejamiento = emparejarPeticionesIntercambio();
+        if (emparejamiento == 1)
+        {
+            enviarMensajeACliente(comm_socket, "Intecambio completado correctamente");
+        }
+        else
+        {
+            enviarMensajeACliente(comm_socket, "Error al intercambiar la peticion");
+        }
     }
     else
     {

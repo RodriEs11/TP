@@ -147,11 +147,19 @@ Figurita *obtenerFiguritas()
 int obtenerFiguritasCount()
 {
     char **lineas = separarLineas(FIGURITAS_FILE);
-    int count = 0;
+    int count = -1; // Se resta 1 para no contar la última línea que es NULL
+
+    if (lineas[0] == NULL || strcmp(lineas[0], "") == 0)
+    {
+        return 0;
+    }
+
     for (int i = 0; lineas[i] != NULL; i++)
     {
+
         count++;
     }
+
     return count;
 };
 
@@ -185,11 +193,68 @@ Figurita *obtenerFiguritasPorUsuario(char *usuario)
     return figuritas;
 };
 
+char *figuritasToStringByUsuario(Figurita *figuritas, int numFiguritas, const char *usuarioFiltro)
+{
+    if (figuritas == NULL || numFiguritas == 0)
+    {
+        char *noFiguritas = malloc(17);
+        strcpy(noFiguritas, "No hay figuritas");
+        return noFiguritas;
+    }
+
+    size_t bufferSize = 1024;
+    char *buffer = malloc(bufferSize);
+    if (buffer == NULL)
+    {
+        return NULL; // Manejo de errores de asignación de memoria.
+    }
+    buffer[0] = '\0'; // Inicializa el buffer como una cadena vacía.
+
+    for (int i = 0; i < numFiguritas; i++)
+    {
+        // Si usuarioFiltro no es NULL, filtra por usuario
+        if (usuarioFiltro != NULL && strcmp(figuritas[i].usuario, usuarioFiltro) != 0)
+        {
+            continue; // Salta esta figurita si el usuario no coincide
+        }
+
+        char temp[512];
+        snprintf(temp, sizeof(temp), "ID: %d, Jugador: %s, Pais: %s, Disponible: %d\n",
+                 figuritas[i].id, figuritas[i].jugador, figuritas[i].pais, figuritas[i].disponible);
+
+        // Verifica si el buffer tiene suficiente espacio
+        if (strlen(buffer) + strlen(temp) + 1 > bufferSize)
+        {
+            bufferSize *= 2;
+            char *newBuffer = realloc(buffer, bufferSize);
+            if (newBuffer == NULL)
+            {
+                free(buffer);
+                return NULL; // Manejo de error de realloc.
+            }
+            buffer = newBuffer; // Actualiza el buffer con el nuevo tamaño.
+        }
+
+        strcat(buffer, temp); // Añade el nuevo registro al buffer.
+    }
+
+    // Si el buffer está vacío, significa que no hubo figuritas del usuario especificado.
+    if (strlen(buffer) == 0)
+    {
+        free(buffer);
+        char *noFiguritas = malloc(35);
+        strcpy(noFiguritas, "No hay figuritas para este usuario");
+        return noFiguritas;
+    }
+
+    return buffer;
+}
+
 char *figuritasToString(Figurita *figuritas, int numFiguritas)
 {
     if (figuritas == NULL || numFiguritas == 0)
     {
-        char *noFiguritas = malloc(25);
+        char *noFiguritas = malloc(17);
         strcpy(noFiguritas, "No hay figuritas");
         return noFiguritas;
     }
@@ -226,3 +291,66 @@ char *figuritasToString(Figurita *figuritas, int numFiguritas)
 
     return buffer;
 };
+
+char *figuritasToStringByUsuarioByDisponible(Figurita *figuritas, int numFiguritas, const char *usuarioFiltro, int disponibleFiltro)
+{
+    if (figuritas == NULL || numFiguritas == 0)
+    {
+        char *noFiguritas = malloc(17);
+        strcpy(noFiguritas, "No hay figuritas");
+        return noFiguritas;
+    }
+
+    size_t bufferSize = 1024;
+    char *buffer = malloc(bufferSize);
+    if (buffer == NULL)
+    {
+        return NULL; // Manejo de errores de asignación de memoria.
+    }
+    buffer[0] = '\0'; // Inicializa el buffer como una cadena vacía.
+
+    for (int i = 0; i < numFiguritas; i++)
+    {
+        // Si usuarioFiltro no es NULL, filtra por usuario
+        if (usuarioFiltro != NULL && strcmp(figuritas[i].usuario, usuarioFiltro) != 0)
+        {
+            continue; // Salta esta figurita si el usuario no coincide
+        }
+
+        // Filtra por disponibilidad
+        if (figuritas[i].disponible != disponibleFiltro)
+        {
+            continue; // Salta esta figurita si la disponibilidad no coincide
+        }
+
+        char temp[512];
+        snprintf(temp, sizeof(temp), "ID: %d, Jugador: %s, Pais: %s, Disponible: %d\n",
+                 figuritas[i].id, figuritas[i].jugador, figuritas[i].pais, figuritas[i].disponible);
+
+        // Verifica si el buffer tiene suficiente espacio
+        if (strlen(buffer) + strlen(temp) + 1 > bufferSize)
+        {
+            bufferSize *= 2;
+            char *newBuffer = realloc(buffer, bufferSize);
+            if (newBuffer == NULL)
+            {
+                free(buffer);
+                return NULL; // Manejo de error de realloc.
+            }
+            buffer = newBuffer; // Actualiza el buffer con el nuevo tamaño.
+        }
+
+        strcat(buffer, temp); // Añade el nuevo registro al buffer.
+    }
+
+    // Si el buffer está vacío, significa que no hubo figuritas del usuario y disponibilidad especificados.
+    if (strlen(buffer) == 0)
+    {
+        free(buffer);
+        char *noFiguritas = malloc(35);
+        strcpy(noFiguritas, "No hay figuritas para este usuario");
+        return noFiguritas;
+    }
+
+    return buffer;
+}

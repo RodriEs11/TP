@@ -170,7 +170,7 @@ char *usuariosToString(Usuario *usuarios, int numUsuarios)
     char *buffer = malloc(bufferSize);
     buffer[0] = '\0';
 
-    for (int i = 0; i < usuarios[i].nombre[0] != '\0'; i++)
+    for (int i = 0; i < numUsuarios; i++)
     {
         char temp[512];
         snprintf(temp, sizeof(temp), "Nombre: %s, Rol: %s, Activo: %s\n", usuarios[i].nombre, usuarios[i].rol, usuarios[i].activo ? "true" : "false");

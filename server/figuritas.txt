@@ -1,5 +1,6 @@
 1;r;argentina;messi;1
-2;r;portugal;ronaldo;1
-3;r;argentina;julian;1
-4;alan;argentina;messi;1
-5;r;argentina;higuain;1
+2;r;colombia;fernandez;1
+5;roberto;portugal;ronaldo;1
+6;r;paraguay;pepe;0
+7;r;chile;jose;1
+8;r;chile;pedro;1

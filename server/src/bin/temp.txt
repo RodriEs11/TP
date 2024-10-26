@@ -1,0 +1,2 @@
+r|argentina|messi|portugal|ronaldo|PENDIENTE
+roberto|portugal|ronaldo|argentina|messi|REALIZADA
