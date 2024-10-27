@@ -24,6 +24,7 @@ struct hostent *host;
 int respuesta, stsize;
 
 #define PORT 6000
+#define HOST "localhost"
 
 void enviarMensajeACliente(SOCKET conn_socket, const char *mensaje)
 {
@@ -51,7 +52,7 @@ int configurarSocket()
     }
 
     // Ip del servidor
-    host = (struct hostent *)gethostbyname("localhost");
+    host = (struct hostent *)gethostbyname(HOST);
 
     if (host == NULL)
     {
